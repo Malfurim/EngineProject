@@ -1,0 +1,70 @@
+
+	To-Do List
+
+1)		*	Create Entity class containing Model, Texture and Shader + entity position and rotation
+2)		**	Create Entity Manager to hold all entities
+3)			Polish Model class and Shader class
+4)			Alter Camera class to hold vectors for movement and functions for easier movement and rotation
+5)			Change Input to DirectX Input
+6)		**	Test drawing more blocks
+7)		**	Test drawing 16x16x16 = 4096 blocks at once
+8)			Go through tutorial and add Light class and light to textures through shaders
+9)			Go through tutorial and add 2D rendering like HUD
+10)			Add text rendering
+11)			Polish everything to make it clean and easy to read
+
+
+
+
+
+Framework
+
+
+				  (contains Parent)
+GraphicBase	----- UIElement ----- Panel			--> contains Children
+							----- Image			--> 4 vertex type image (contains a pointer to texture)
+							----- StretchImage	--> 16 or 25 vertex type image with constant image borders
+							----- Text			--> contains texts
+							----- InputBlock	--> contain field for user input
+							----- Button		--> action on click + background and foreground elements
+
+		    ----- WorldElement ----- Entity
+							   ----- Item
+							   ----- Terrain
+							   -----
+							   -----
+
+
+
+UIElement - on SetPosition add Parent's position
+UIElement - contains events with mouse
+InputBlock - contains events with keyboard
+Image and StretchImage - might be made as one class with some bool conditions for creating buffers
+
+
+GraphicBase	-> variables to hold buffers, vertices, indices
+			   background color and it's render
+			   holds Color struct in header file
+			   mouse events for any object interaction
+
+			UIElement	-> position, size, holds parent for parent's position
+						   static matrices for world, view and ortho
+			
+						Panel		-> children -> defines a group of elements
+						
+						Image		-> pointer to texture and alters buffers to draw stretchable image
+						
+						Text		-> pointer to texture of font, alters buffers to draw text from the texture
+									   length of text, custom width and height of the block - allows centering
+									   keyboard events to alter it's text, mouse to select text etc.
+						
+						Button		-> Image for normal, hover, being clicked, switched on
+									   Backgroud for hover, being clicked, switched on (normal in GraphicBase)
+
+
+
+
+move shader codes back into hlsl files
+keep their compilation as already made
+
+follow instruction ideas from AI
