@@ -116,9 +116,6 @@
     <ClInclude Include="ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -140,13 +137,7 @@
     <ClInclude Include="UIButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Shader_Color.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextureShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader_Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Font.h">

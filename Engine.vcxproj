@@ -157,7 +157,6 @@
     <ClInclude Include="Font.h" />
     <ClInclude Include="FontShader.h" />
     <ClInclude Include="Position.h" />
-    <ClInclude Include="Shader_Color.h" />
     <ClInclude Include="DirectXManager.h" />
     <ClInclude Include="GraphicBase.h" />
     <ClInclude Include="InputManager.h" />
@@ -165,8 +164,6 @@
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="Shader_Texture.h" />
-    <ClInclude Include="Singleton.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureShader.h" />
     <ClInclude Include="TimerManager.h" />
