@@ -28,7 +28,7 @@ Application::~Application()
 {
 	SAFE_DELETE(m_camera);
 	SAFE_DELETE(m_userInterface);
-	// something
+	
 	m_renderMatrix = {};
 }
 
