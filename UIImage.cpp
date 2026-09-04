@@ -1,6 +1,8 @@
 #include "UIImage.h"
 #include "DirectXManager.h"
-#include "Utils.h"
+#include "TextureShader.h"
+#include "Texture.h"
+#include "Deleters.h"
 
 TextureShader* UIImage::ms_imageShader = nullptr;
 

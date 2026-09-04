@@ -6,12 +6,6 @@
 #pragma comment(lib, "d3dcompiler.lib")
 
 #include <d3d11.h>
-#include <DirectXMath.h>
-#include "Settings.h"
-
-#include "Singleton.h"
-
-using namespace DirectX;
 
 #define DXMANAGER DirectXManager::Instance()
 #define DXDEVICE DirectXManager::Instance()->GetDevice()

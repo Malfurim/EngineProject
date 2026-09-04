@@ -2,7 +2,6 @@
 
 #include "UIElement.h"
 #include <vector>
-#include <algorithm>
 
 class UIPanel : public UIElement
 {

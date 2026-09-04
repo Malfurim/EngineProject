@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Windows.h>
-#include <Windowsx.h>
 
 #define WINDOW Window::Instance()
 #define WINDOWHWND Window::Instance()->GetHwnd()

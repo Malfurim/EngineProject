@@ -1,5 +1,6 @@
 #include "UIPanel.h"
-#include "Utils.h"
+#include <algorithm>
+#include "Deleters.h"
 
 UIPanel::UIPanel() : UIPanel({ 0,0 }, { 0,0 }, { 0, 0, 0, 0 })
 {

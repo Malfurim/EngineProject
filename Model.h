@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Shader.h"
 #include <d3d11.h>
 #include <DirectXMath.h>
-#include <fstream>
 #include <string>
 
 using namespace DirectX;

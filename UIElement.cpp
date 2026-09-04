@@ -2,6 +2,7 @@
 #include "Settings.h"
 #include "DirectXManager.h"
 #include "InputManager.h"
+#include "Deleters.h"
 #include "Utils.h"
 
 XMMATRIX UIElement::ms_worldMatrix = XMMatrixIdentity();

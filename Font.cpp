@@ -1,8 +1,7 @@
 #include "Font.h"
-#include "DirectXManager.h"
-#include "Utils.h"
-
+#include <fstream>
 #include <sstream>
+#include "Utils.h"
 
 Font::Font()
 {

@@ -1,5 +1,7 @@
 #include "DirectXManager.h"
 #include "Window.h"
+#include "Settings.h"
+#include "Deleters.h"
 
 DirectXManager* DirectXManager::ms_instance = nullptr;
 
@@ -15,6 +17,18 @@ DirectXManager::~DirectXManager()
 		m_swapChain->SetFullscreenState(false, NULL);
 	}
 
+	SAFE_RELEASE(m_alphaEnabledBlendingState);
+	SAFE_RELEASE(m_alphaDisabledBlendingState);
+	SAFE_RELEASE(m_rasterState);
+	SAFE_RELEASE(m_depthStencilView);
+	SAFE_RELEASE(m_depthStencilState);
+	SAFE_RELEASE(m_depthDisabledStencilState);
+	SAFE_RELEASE(m_depthStencilBuffer);
+	SAFE_RELEASE(m_renderTargetView);
+	SAFE_RELEASE(m_deviceContext);
+	SAFE_RELEASE(m_device);
+	SAFE_RELEASE(m_swapChain);
+	/*
 	if (m_alphaEnabledBlendingState)
 	{
 		m_alphaEnabledBlendingState->Release();
@@ -80,7 +94,7 @@ DirectXManager::~DirectXManager()
 		m_swapChain->Release();
 		m_swapChain = nullptr;
 	}
-
+	*/
 	ms_instance = nullptr;
 }
 

@@ -1,7 +1,10 @@
 #include "GraphicBase.h"
+#include <d3d11.h>
+#include <fstream>
 #include "DirectXManager.h"
 #include "ResourceManager.h"
-#include "Utils.h"
+#include "Shader.h"
+#include "Deleters.h"
 
 Shader* GraphicBase::ms_shader = nullptr;
 GraphicBase* GraphicBase::ms_focus = nullptr;

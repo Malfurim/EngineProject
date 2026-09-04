@@ -1,4 +1,6 @@
 #include "Utils.h"
+#include <sstream>
+#include <iomanip>
 
 std::wstring GetFilename(const std::wstring& filePath)
 {

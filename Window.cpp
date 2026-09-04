@@ -1,4 +1,5 @@
 #include "Window.h"
+#include <Windowsx.h>
 #include "InputManager.h"
 #include "GraphicBase.h"
 #include "Settings.h"

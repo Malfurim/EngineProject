@@ -1,6 +1,9 @@
 #include "ResourceManager.h"
 #include "Window.h"
 #include "DirectXManager.h"
+#include "Texture.h"
+#include "Model.h"
+#include "Font.h"
 #include "Utils.h"
 
 ResourceManager* ResourceManager::ms_instance = nullptr;

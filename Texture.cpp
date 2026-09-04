@@ -1,5 +1,7 @@
 #include "Texture.h"
+#include <fstream>
 #include "DirectXManager.h"
+#include "Deleters.h"
 
 Texture::Texture()
 {
@@ -7,6 +9,10 @@ Texture::Texture()
 
 Texture::~Texture()
 {
+	SAFE_RELEASE(m_texture);
+	SAFE_RELEASE(m_textureData);
+	SAFE_DELETE_ARRAY(m_imageData);
+	/*
 	if (m_texture)
 	{
 		m_texture->Release();
@@ -23,7 +29,7 @@ Texture::~Texture()
 		delete[] m_imageData;
 		m_imageData = nullptr;
 	}
-
+	*/
 	m_name.clear();
 	m_path.clear();
 }

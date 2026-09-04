@@ -11,6 +11,7 @@
 #include "UIImage.h"
 #include "UIText.h"
 
+#include "Deleters.h"
 #include "Utils.h"
 
 #include <iomanip>

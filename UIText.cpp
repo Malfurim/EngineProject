@@ -1,7 +1,9 @@
 #include "UIText.h"
-#include "DirectXManager.h"
-#include "Utils.h"
 #include <sstream>
+#include "DirectXManager.h"
+#include "FontShader.h"
+#include "Font.h"
+#include "Deleters.h"
 
 FontShader* UIText::ms_textShader = nullptr;
 

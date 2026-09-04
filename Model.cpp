@@ -1,4 +1,6 @@
 #include "Model.h"
+#include <fstream>
+#include "Deleters.h"
 
 Model::Model()
 {
@@ -6,6 +8,10 @@ Model::Model()
 
 Model::~Model()
 {
+	SAFE_RELEASE(m_vertexBuffer);
+	SAFE_RELEASE(m_indexBuffer);
+	SAFE_DELETE_ARRAY(m_model);
+	/*
 	if (m_vertexBuffer)
 	{
 		m_vertexBuffer->Release();
@@ -23,6 +29,7 @@ Model::~Model()
 		delete[] m_model;
 		m_model = nullptr;
 	}
+	*/
 }
 
 bool Model::Initialize(ID3D11Device* device, LPCWSTR modelPath, bool writeable)

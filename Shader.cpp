@@ -1,7 +1,10 @@
 #include "Shader.h"
-#include "Utils.h"
+#include <d3dcompiler.h>
+#include <fstream>
 #include "Window.h"
 #include "DirectXManager.h"
+#include "Deleters.h"
+#include "Utils.h"
 
 // Default constructor for color shader
 Shader::Shader()

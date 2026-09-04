@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Texture.h"
-#include "Model.h"
-#include "Font.h"
-#include <vector>
 #include <string>
 #include <unordered_map>
 
+class Texture;
+class Model;
+class Font;
 
 #define RESOURCE ResourceManager::Instance()
 

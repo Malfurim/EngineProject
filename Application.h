@@ -1,9 +1,11 @@
 #pragma once
 
+#include <DirectXMath.h>
+using namespace DirectX;
+
 class Camera;
 class UIPanel;
 class UIText;
-
 
 #define APPLICATION Application::Instance()
 

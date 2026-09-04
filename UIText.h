@@ -1,7 +1,10 @@
 #pragma once
 
 #include "UIElement.h"
-#include "FontShader.h"
+#include <string>
+
+class FontShader;
+class Font;
 
 enum TextProperty : unsigned int
 {

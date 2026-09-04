@@ -1,11 +1,8 @@
 #pragma once
 
-#include <DirectXMath.h>
-#include <fstream>
+#include <d3d11.h>
 #include <unordered_map>
 #include "Texture.h"
-
-using namespace DirectX;
 
 struct CharacterData
 {

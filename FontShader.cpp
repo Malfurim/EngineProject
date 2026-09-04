@@ -1,5 +1,4 @@
 #include "FontShader.h"
-#include "Utils.h"
 
 FontShader::FontShader()
 {

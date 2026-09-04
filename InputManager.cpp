@@ -1,5 +1,4 @@
 #include "InputManager.h"
-#include <Windows.h>
 #include <string>
 
 InputManager* InputManager::ms_instance = nullptr;

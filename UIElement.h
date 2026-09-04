@@ -1,8 +1,6 @@
 #pragma once
 
 #include "GraphicBase.h"
-#include "ResourceManager.h"
-#include <vector>
 #include "Position.h"
 
 struct Size

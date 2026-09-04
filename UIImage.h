@@ -1,7 +1,9 @@
 #pragma once
 
 #include "UIElement.h"
-#include "TextureShader.h"
+
+class Texture;
+class TextureShader;
 
 class UIImage : public UIElement
 {

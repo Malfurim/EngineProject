@@ -1,12 +1,11 @@
 #pragma once
 
-#include <d3d11.h>
 #include <DirectXMath.h>
-#include <fstream>
-
-#include "Shader.h"
 #include "Event.h"
 #include "InputManager.h"
+
+class Shader;
+struct ID3D11Buffer;
 
 using namespace DirectX;
 

@@ -1,6 +1,6 @@
 #include "TextureShader.h"
 #include "DirectXManager.h"
-#include "Utils.h"
+#include "Deleters.h"
 
 TextureShader::TextureShader()
 {
