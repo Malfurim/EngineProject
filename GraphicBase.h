@@ -1,8 +1,7 @@
 #pragma once
 
 #include <DirectXMath.h>
-#include "Event.h"
-#include "InputManager.h"
+#include "Interactive.h"
 
 class Shader;
 struct ID3D11Buffer;
@@ -51,7 +50,7 @@ struct SPDNT2Vertex
 	TTextureCoordinate texCoord2{ 0.0f, 0.0f };
 };
 
-class GraphicBase
+class GraphicBase : public Interactive
 {
 private:
 	struct SPCVertex
@@ -67,29 +66,6 @@ public:
 	void SetBackgroundColor(Color color);
 	Color GetBackgroundColor();
 
-	void Focus();
-	static void Unfocus();
-	static bool IsFocused() { return ms_focus != nullptr; }
-	static GraphicBase* GetFocus() { return ms_focus; }
-	virtual void OnTextInput(wchar_t character) {}
-	virtual bool CapturesKeyboard() const { return false; }
-
-	InputState GetRequiredInputState() const { return m_requiredInputState; }
-
-	Event<> OnMouseEnter;
-	Event<> OnMouseLeave;
-	Event<> OnLeftClick;
-	Event<> OnRightClick;
-	Event<> OnMiddleClick;
-	Event<> OnRightRelease;
-	Event<> OnLeftRelease;
-	Event<> OnMiddleRelease;
-	Event<int, int> OnMouseMove;
-	Event<GraphicBase*> OnFocus;
-	Event<GraphicBase*> OnFocusLost;
-
-	bool IsHover() const { return m_isHover; }
-
 	bool Visibility{ true };
 
 private:
@@ -102,9 +78,6 @@ protected:
 	virtual void Update();
 
 	bool LoadBuffers();
-
-	virtual bool CheckMouseOver() const = 0;
-	void UpdateMouseEvents();
 
 protected:
 	BackgroundType m_background{ BACKGROUND_NONE };
@@ -120,10 +93,6 @@ protected:
 	int m_index{ 0 };
 
 	bool m_dynamic{ false };
-	bool m_isHover{ false };
-	InputState m_requiredInputState{ InputState::INPUT_STATE_GAMEPLAY };
-
-	static GraphicBase* ms_focus;
 
 private:
 	ID3D11Buffer* m_vertexBufferBackground{ nullptr };

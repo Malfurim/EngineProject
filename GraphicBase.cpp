@@ -3,18 +3,16 @@
 #include <fstream>
 #include "DirectXManager.h"
 #include "ResourceManager.h"
+#include "InputManager.h"
 #include "Shader.h"
 #include "Deleters.h"
 
 Shader* GraphicBase::ms_shader = nullptr;
-GraphicBase* GraphicBase::ms_focus = nullptr;
 
 GraphicBase::GraphicBase()
 {
 	if (ms_shader == nullptr)
 		ms_shader = new Shader();
-
-	OnLeftClick += [this] { this->Focus(); };
 }
 
 GraphicBase::~GraphicBase()
@@ -164,48 +162,4 @@ bool GraphicBase::SetIndexBuffer()
 Color GraphicBase::GetBackgroundColor()
 {
 	return m_backgroundColor;
-}
-
-void GraphicBase::Focus()
-{
-	if (ms_focus == this)
-		return;
-
-	if (ms_focus != nullptr)
-	{
-		ms_focus->OnFocusLost.Invoke(ms_focus);
-	}
-
-	ms_focus = this;
-	OnFocus.Invoke(this);
-
-	INP->SetInputState(ms_focus->GetRequiredInputState());
-}
-
-void GraphicBase::Unfocus()
-{
-	MessageBox(NULL, L"un focusing something", L"unfocus", MB_OK);
-
-	if (ms_focus == nullptr)
-		return;
-
-	ms_focus->OnFocusLost.Invoke(ms_focus);
-	ms_focus = nullptr;
-	INP->SetInputState(InputState::INPUT_STATE_GAMEPLAY);
-}
-
-void GraphicBase::UpdateMouseEvents()
-{
-	bool hover = CheckMouseOver();
-
-	if (hover && !m_isHover)
-	{
-		m_isHover = true;
-		OnMouseEnter();
-	}
-	else if (!hover && m_isHover)
-	{
-		m_isHover = false;
-		OnMouseLeave();
-	}
 }

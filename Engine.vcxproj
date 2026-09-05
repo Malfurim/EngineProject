@@ -136,6 +136,7 @@
     <ClCompile Include="FontShader.cpp" />
     <ClCompile Include="GraphicBase.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Interactive.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="Event.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="FontShader.h" />
+    <ClInclude Include="Interactive.h" />
     <ClInclude Include="Position.h" />
     <ClInclude Include="DirectXManager.h" />
     <ClInclude Include="GraphicBase.h" />

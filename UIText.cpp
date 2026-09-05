@@ -162,7 +162,7 @@ void UIText::OnTextInput(wchar_t character)
     }
     else if (character == L'\r' || character == VK_ESCAPE)
     {
-        Unfocus();
+        RemoveFocus(this->GetFocusType());
     }
     else if (character >= 32)
     {
@@ -303,7 +303,13 @@ void UIText::SetTextProperties(unsigned int properties)
 void UIText::EnsureInputState()
 {
     if (HasTextProperty(TextProperty::TEXT_PROPERTY_EDITABLE))
+    {
         m_requiredInputState = InputState::INPUT_STATE_TEXTEDITING;
+        m_interactive = true;
+    }
     else
+    {
         m_requiredInputState = InputState::INPUT_STATE_GAMEPLAY;
+        m_interactive = false;
+    }
 }

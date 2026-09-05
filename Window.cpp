@@ -1,7 +1,7 @@
 #include "Window.h"
 #include <Windowsx.h>
 #include "InputManager.h"
-#include "GraphicBase.h"
+#include "Interactive.h"
 #include "Settings.h"
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -211,9 +211,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_CHAR:
     {
-        if (GraphicBase::IsFocused())
+        if (Interactive::GetFocus(FocusType::FOCUS_TYPE_UI) != nullptr)
         {
-            GraphicBase::GetFocus()->OnTextInput((wchar_t)wParam);
+            Interactive::GetFocus(FocusType::FOCUS_TYPE_UI)->OnTextInput((wchar_t)wParam);
         }
         return 0;
     }

@@ -141,12 +141,12 @@ void Application::Update()
 		UIElement* element = m_userInterface->GetElementAtPosition(MOUSEX, MOUSEY);
 		if (element != nullptr)
 		{
-			element->OnLeftClick.Invoke();
+			element->HandleLeftClick();
 			xx = element->GetPositionLeft();
 		}
 		else
 		{
-			GraphicBase::Unfocus();
+			Interactive::RemoveFocus(FocusType::FOCUS_TYPE_UI);
 			/*
 			if (GraphicBase::GetFocus() != nullptr)
 			{

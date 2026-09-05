@@ -68,3 +68,17 @@ move shader codes back into hlsl files
 keep their compilation as already made
 
 follow instruction ideas from AI
+
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//															//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ---  ---
+
+
+
+how to add a function to event
+LeftClick += [this](Interactive* object) { HandleFocus(); };
