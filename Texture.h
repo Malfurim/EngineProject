@@ -1,38 +1,95 @@
 #pragma once
 
+// --- INCLUDES ---
 #include <d3d11.h>
 #include <string>
 
+// --- CONSTANTS ---
+
+
+// --- MACROS & DEFINES ---
+
+
+// --- ENUMS & STRUCTS ---
+
+
+// --- FORWARD DECLARATIONS ---
+
 class Texture
 {
+// - INTERFACE -
 public:
+	// --- CONSTRUCTORS & DESTRUCTOR ---
 	Texture();
 	~Texture();
 	
+	// --- CORE FUNCTIONS ---
 	bool Initialize(const std::wstring& fileName, bool enableMipmap);
+	// void Update();
+	// void Render();
 
-	ID3D11ShaderResourceView* GetTexture();
-	std::wstring GetName();
-	int GetWidth();
-	int GetHeight();
+	// --- VIRTUAL FUNCTIONS ---
+
+
+	// --- CLASS API ---
+
+
+	// --- GETTERS & SETTERS ---
+	ID3D11ShaderResourceView* GetTexture() const { return m_texture; }
+	std::wstring GetName() const { return m_name; }
+	int GetWidth() const { return m_width; }
+	int GetHeight() const { return m_height; }
+
+	// --- STATIC CLASS API ---
+
+
+protected:
+	// --- CONSTRUCTORS ---
+
+
+	// --- VIRTUAL FUNCTIONS ---
+
+
+	// --- PROTECTED FUNCTIONS ---
+
 
 private:
+	// --- CONSTRUCTORS ---
+
+
+	// --- PRIVATE FUNCTIONS ---
 	bool LoadImageData(const std::wstring& fileName);
 	bool LoadBMPImage(const std::wstring& fileName);
 	bool LoadPNGImage(const std::wstring& fileName);
 	bool LoadJPGImage(const std::wstring& fileName);
 	bool LoadTGAImage(const std::wstring& fileName);
 
-	unsigned char* m_imageData{ nullptr };
-	ID3D11Texture2D* m_textureData{ nullptr };
-	ID3D11ShaderResourceView* m_texture{ nullptr };
-	std::wstring m_name;
-	std::wstring m_path;
-	int m_width{ 0 };
-	int m_height{ 0 };
-	short m_bitsPerPixel{ 0 };
+// - PROPERTIES -
+public:
+	// --- PUBLIC COMPONENT STATES ---
+
+
+	// --- PUBLIC COMPONENT DATA ---
+
+
+protected:
+	// --- INTERNAL CONSTANTS ---
+
+
+	// --- INTERNAL STRUCTS & ENUMS ---
+
+
+	// --- INTERNAL COMPONENT STATES ---
+
+
+	// --- INTERNAL COMPONENT DATA ---
+
 
 private:
+	// --- PRIVATE CONSTANTS ---
+
+
+	// --- PRIVATE STRUCTS & ENUMS ---
 #pragma pack(1)
 	struct BitmapHeader
 	{
@@ -67,4 +124,20 @@ private:
 		unsigned char data2;
 	};
 #pragma pack()
+
+	// --- PRIVATE COMPONENT STATES ---
+
+
+	// --- PRIVATE COMPONENT DATA ---
+	unsigned char* m_imageData{ nullptr };
+	ID3D11Texture2D* m_textureData{ nullptr };
+	ID3D11ShaderResourceView* m_texture{ nullptr };
+	std::wstring m_name;
+	std::wstring m_path;
+	int m_width{ 0 };
+	int m_height{ 0 };
+	short m_bitsPerPixel{ 0 };
+
+	// --- STATIC GLOBAL STATES ---
+
 };

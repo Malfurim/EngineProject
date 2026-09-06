@@ -1,21 +1,21 @@
 #pragma once
 
+// --- INCLUDES ---
 #include <DirectXMath.h>
 #include "Interactive.h"
 
-class Shader;
-struct ID3D11Buffer;
+// --- CONSTANTS ---
 
-using namespace DirectX;
 
+// --- MACROS & DEFINES ---
 #define VERTEXSTRUCTSIZE sizeof(SPDNT2Vertex)
+typedef DirectX::XMFLOAT3 TPosition;
+typedef DirectX::XMFLOAT4 TColor;
+typedef DirectX::XMFLOAT3 TNormal;
+typedef DirectX::XMFLOAT3 TDiffuse;
+typedef DirectX::XMFLOAT2 TTextureCoordinate;
 
-typedef XMFLOAT3 TPosition;
-typedef XMFLOAT4 TColor;
-typedef XMFLOAT3 TNormal;
-typedef XMFLOAT3 TDiffuse;
-typedef XMFLOAT2 TTextureCoordinate;
-
+// --- ENUMS & STRUCTS ---
 enum BackgroundType
 {
 	BACKGROUND_NONE,
@@ -50,36 +50,74 @@ struct SPDNT2Vertex
 	TTextureCoordinate texCoord2{ 0.0f, 0.0f };
 };
 
+// --- FORWARD DECLARATIONS ---
+class Shader;
+struct ID3D11Buffer;
+using namespace DirectX;
+
 class GraphicBase : public Interactive
 {
-private:
-	struct SPCVertex
-	{
-		TPosition position;
-		TColor color;
-	};
-
+// - INTERFACE -
 public:
+	// --- CONSTRUCTORS & DESTRUCTOR ---
 	virtual ~GraphicBase();
+
+	// --- CORE FUNCTIONS ---
+	// bool Initialize();
+	virtual void Update();
+	virtual void Render(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix);
 	static void Shutdown();
 
-	void SetBackgroundColor(Color color);
-	Color GetBackgroundColor();
+	// --- VIRTUAL FUNCTIONS ---
 
-	bool Visibility{ true };
+
+	// --- CLASS API ---
+
+
+	// --- GETTERS & SETTERS ---
+	Color GetBackgroundColor() const { return m_backgroundColor; }
+	void SetBackgroundColor(Color color);
+
+	// --- STATIC CLASS API ---
+	
+
+protected:
+	// --- CONSTRUCTORS ---
+	GraphicBase();
+
+	// --- VIRTUAL FUNCTIONS ---
+
+
+	// --- PROTECTED FUNCTIONS ---
+	bool LoadBuffers();
 
 private:
+	// --- CONSTRUCTORS ---
+
+
+	// --- PRIVATE FUNCTIONS ---
 	bool SetVertexBuffer();
 	bool SetIndexBuffer();
 
-protected:
-	GraphicBase();
-	virtual void Render(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix);
-	virtual void Update();
+// - PROPERTIES -
+public:
+	// --- PUBLIC COMPONENT STATES ---
+	bool Visibility{ true };
 
-	bool LoadBuffers();
+	// --- PUBLIC COMPONENT DATA ---
+
 
 protected:
+	// --- INTERNAL CONSTANTS ---
+
+
+	// --- INTERNAL STRUCTS & ENUMS ---
+
+
+	// --- INTERNAL COMPONENT STATES ---
+	bool m_dynamic{ false };
+
+	// --- INTERNAL COMPONENT DATA ---
 	BackgroundType m_background{ BACKGROUND_NONE };
 	Color m_backgroundColor{ 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -92,11 +130,24 @@ protected:
 	int m_indexCount{ 0 };
 	int m_index{ 0 };
 
-	bool m_dynamic{ false };
-
 private:
+	// --- PRIVATE CONSTANTS ---
+
+
+	// --- PRIVATE STRUCTS & ENUMS ---
+	struct SPCVertex
+	{
+		TPosition position;
+		TColor color;
+	};
+
+	// --- PRIVATE COMPONENT STATES ---
+
+
+	// --- PRIVATE COMPONENT DATA ---
 	ID3D11Buffer* m_vertexBufferBackground{ nullptr };
 
+	// --- STATIC GLOBAL STATES ---
 	static Shader* ms_shader;
 };
 

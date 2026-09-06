@@ -9,7 +9,7 @@
 // --- MACROS & DEFINES ---
 
 
-// --- ENUMS & FLAGS ---
+// --- ENUMS & STRUCTS ---
 
 
 // --- FORWARD DECLARATIONS ---
@@ -23,10 +23,14 @@ public:
 	Camera();
 	~Camera();
 
+	
+	// --- CORE FUNCTIONS ---
+	// bool Initialize();
+	// void Update();
+	void Render();
+
 	// --- VIRTUAL FUNCTIONS ---
-	// virtual bool Initialize();
-	// virtual void Update();
-	virtual void Render();
+
 
 	// --- CLASS API ---
 
@@ -69,6 +73,12 @@ public:
 
 
 protected:
+	// --- INTERNAL CONSTANTS ---
+
+
+	// --- INTERNAL STRUCTS & ENUMS ---
+
+
 	// --- INTERNAL COMPONENT STATES ---
 
 
@@ -76,6 +86,12 @@ protected:
 
 
 private:
+	// --- PRIVATE CONSTANTS ---
+
+
+	// --- PRIVATE STRUCTS & ENUMS ---
+
+
 	// --- PRIVATE COMPONENT STATES ---
 
 

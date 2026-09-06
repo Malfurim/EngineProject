@@ -1,8 +1,24 @@
 #include "Texture.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include <fstream>
 #include "DirectXManager.h"
 #include "Deleters.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Texture::Texture()
 {
 }
@@ -12,28 +28,13 @@ Texture::~Texture()
 	SAFE_RELEASE(m_texture);
 	SAFE_RELEASE(m_textureData);
 	SAFE_DELETE_ARRAY(m_imageData);
-	/*
-	if (m_texture)
-	{
-		m_texture->Release();
-		m_texture = nullptr;
-	}
-
-	if (m_textureData)
-	{
-		m_textureData->Release();
-		m_textureData = nullptr;
-	}
-	if (m_imageData)
-	{
-		delete[] m_imageData;
-		m_imageData = nullptr;
-	}
-	*/
 	m_name.clear();
 	m_path.clear();
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Texture::Initialize(const std::wstring& fileName, bool enableMipmap)
 {
 	bool result;
@@ -119,26 +120,47 @@ bool Texture::Initialize(const std::wstring& fileName, bool enableMipmap)
 	return true;
 }
 
-ID3D11ShaderResourceView* Texture::GetTexture()
-{
-	return m_texture;
-}
+//void Texture::Update()
+//{
+//}
 
-std::wstring Texture::GetName()
-{
-	return m_name;
-}
+//void Texture::Render()
+//{
+//}
 
-int Texture::GetWidth()
-{
-	return m_width;
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
-int Texture::GetHeight()
-{
-	return m_height;
-}
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Texture::LoadImageData(const std::wstring& fileName)
 {
 	// Get file extension and check if it is something known and process it

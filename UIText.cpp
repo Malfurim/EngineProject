@@ -1,12 +1,26 @@
 #include "UIText.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include <sstream>
 #include "DirectXManager.h"
 #include "FontShader.h"
 #include "Font.h"
 #include "Deleters.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 FontShader* UIText::ms_textShader = nullptr;
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 UIText::UIText() : UIText({ 0, 0 }, { 0, 0 }, nullptr)
 {
 }
@@ -24,32 +38,13 @@ UIText::~UIText()
     m_text.clear();
 }
 
-void UIText::Shutdown()
-{
-    SAFE_DELETE(ms_textShader);
-}
-
-void UIText::Render()
-{
-    if (!Visibility)
-        return;
-    UIElement::Render();
-
-    if (m_font == nullptr)
-        return;
-
-    unsigned int stride = VERTEXSTRUCTSIZE;
-    unsigned int offset = 0;
-
-    DXDEVICECONTEXT->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
-    DXDEVICECONTEXT->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-    DXDEVICECONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    ms_textShader->SetShaderParameters(m_font->GetTexture());
-    ms_textShader->SetShaderParameters(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
-    ms_textShader->Render(m_indexCount);
-    ms_textShader->Reset();
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool UIText::Initialize()
+//{
+//	return true;
+//}
 
 void UIText::Update()
 {
@@ -76,6 +71,78 @@ void UIText::Update()
     m_changed = false;
 }
 
+void UIText::Render()
+{
+    if (!Visibility)
+        return;
+    UIElement::Render();
+
+    if (m_font == nullptr)
+        return;
+
+    unsigned int stride = VERTEXSTRUCTSIZE;
+    unsigned int offset = 0;
+
+    DXDEVICECONTEXT->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
+    DXDEVICECONTEXT->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    DXDEVICECONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    ms_textShader->SetShaderParameters(m_font->GetTexture());
+    ms_textShader->SetShaderParameters(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
+    ms_textShader->Render(m_indexCount);
+    ms_textShader->Reset();
+}
+
+void UIText::Shutdown()
+{
+    SAFE_DELETE(ms_textShader);
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void UIText::OnTextInput(wchar_t character)
+{
+    if (character == L'\b')
+    {
+        std::wstring text = GetText();
+
+        if (!text.empty())
+        {
+            text.pop_back();
+            SetText(text);
+        }
+    }
+    else if (character == L'\r' || character == VK_ESCAPE)
+    {
+        RemoveFocus(this->GetFocusType());
+    }
+    else if (character >= 32)
+    {
+        std::wstring text = GetText();
+        text += character;
+        SetText(text);
+    }
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void UIText::AddTextProperty(TextProperty property)
+{
+    m_properties |= property;
+    EnsureInputState();
+}
+
+void UIText::RemoveTextProperty(TextProperty property)
+{
+    m_properties &= ~property;
+    EnsureInputState();
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIText::SetText(std::wstring text)
 {
     if (m_text == text)
@@ -87,11 +154,6 @@ void UIText::SetText(std::wstring text)
     CalculateTextWidth();
     CalculateGeometry();
     LoadBuffers();
-}
-
-std::wstring UIText::GetText()
-{
-    return m_text;
 }
 
 void UIText::SetFont(Font* font)
@@ -138,40 +200,30 @@ void UIText::SetTextAlignment(HorizontalTextAlignment horizontalTextAlignment, V
     m_changed = true;
 }
 
-float UIText::GetFontHeight()
+void UIText::SetTextProperties(unsigned int properties)
 {
-    return m_fontHeight;
+    m_properties = properties;
+    EnsureInputState();
 }
 
-float UIText::GetTextWidth()
-{
-    return m_textWidth;
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
-void UIText::OnTextInput(wchar_t character)
-{
-    if (character == L'\b')
-    {
-        std::wstring text = GetText();
 
-        if (!text.empty())
-        {
-            text.pop_back();
-            SetText(text);
-        }
-    }
-    else if (character == L'\r' || character == VK_ESCAPE)
-    {
-        RemoveFocus(this->GetFocusType());
-    }
-    else if (character >= 32)
-    {
-        std::wstring text = GetText();
-        text += character;
-        SetText(text);
-    }
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIText::ConfirmShader()
 {
     if (ms_textShader == nullptr)
@@ -280,24 +332,6 @@ void UIText::CalculateGeometry()
 
     m_vertexCount = vertexIndex;
     m_indexCount = (vertexIndex / 4) * 6;
-}
-
-void UIText::AddTextProperty(TextProperty property)
-{
-    m_properties |= property;
-    EnsureInputState();
-}
-
-void UIText::RemoveTextProperty(TextProperty property)
-{
-    m_properties &= ~property;
-    EnsureInputState();
-}
-
-void UIText::SetTextProperties(unsigned int properties)
-{
-    m_properties = properties;
-    EnsureInputState();
 }
 
 void UIText::EnsureInputState()

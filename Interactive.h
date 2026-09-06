@@ -10,7 +10,7 @@ static constexpr unsigned int MAX_FOCUS_TYPES = 2;
 // --- MACROS & DEFINES ---
 
 
-// --- ENUMS & FLAGS ---
+// --- ENUMS & STRUCTS ---
 enum FocusType
 {
 	FOCUS_TYPE_UI,
@@ -27,10 +27,12 @@ public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	~Interactive();
 
+	// --- CORE FUNCTIONS ---
+	// bool Initialize();
+	// void Update();
+	// void Render();
+	
 	// --- VIRTUAL FUNCTIONS ---
-	// virtual bool Initialize();
-	// virtual void Update();
-	// virtual void Render();
 	virtual void OnTextInput(wchar_t character) {}
 
 	// --- CLASS API ---
@@ -115,6 +117,12 @@ public:
 	Event<Interactive*> FocusLost;
 
 protected:
+	// --- INTERNAL CONSTANTS ---
+
+
+	// --- INTERNAL STRUCTS & ENUMS ---
+	
+	
 	// --- INTERNAL COMPONENT STATES ---
 	InputState m_requiredInputState{ InputState::INPUT_STATE_GAMEPLAY };
 	FocusType m_focusType{ FocusType::FOCUS_TYPE_UI };
@@ -124,6 +132,12 @@ protected:
 	// --- INTERNAL DATA VARIABLES ---
 
 private:
+	// --- PRIVATE CONSTANTS ---
+
+
+	// --- PRIVATE STRUCTS & ENUMS ---
+
+
 	// --- PRIVATE COMPONENT STATES ---
 
 

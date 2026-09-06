@@ -1,7 +1,23 @@
 #include "TextureShader.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include "DirectXManager.h"
 #include "Deleters.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 TextureShader::TextureShader()
 {
 	ID3D10Blob* vertexShaderBuffer = nullptr;
@@ -15,6 +31,17 @@ TextureShader::~TextureShader()
 {
 	SAFE_RELEASE(m_samplerState);
 }
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool TextureShader::Initialize()
+//{
+//	return true;
+//}
+
+//void TextureShader::Update()
+//{
+//}
 
 void TextureShader::Render(int indexCount)
 {
@@ -28,6 +55,19 @@ void TextureShader::Reset()
 	Shader::Reset();
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool TextureShader::SetShaderParameters(ID3D11ShaderResourceView* texture)
 {
 	if (texture == nullptr)
@@ -44,6 +84,14 @@ bool TextureShader::SetShaderParameters(XMMATRIX worldMatrix, XMMATRIX viewMatri
 	return Shader::SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool TextureShader::InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Blob* pixelShaderBuffer)
 {
 	Shader::InitializeShaderComponents(vertexShaderBuffer, pixelShaderBuffer);
@@ -131,3 +179,13 @@ bool TextureShader::InitializeLayout(ID3D10Blob* vertexShaderBuffer)
 
 	return true;
 }
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+

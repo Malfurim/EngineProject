@@ -26,7 +26,7 @@ Interactive::~Interactive()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	CORE FUNCTIONS											//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //bool Interactive::Initialize()
 //{
@@ -40,6 +40,11 @@ Interactive::~Interactive()
 //void Interactive::Render()
 //{
 //}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CLASS API												//
@@ -157,7 +162,7 @@ void Interactive::RemoveFocus(FocusType type)
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL VIRTUALS										//
+//	PROTECTED VIRTUALS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void Interactive::OnLeftClick()
 {

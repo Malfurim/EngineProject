@@ -1,8 +1,16 @@
 #pragma once
 
+// --- INCLUDES ---
 #include "GraphicBase.h"
 #include "Position.h"
 
+// --- CONSTANTS ---
+
+
+// --- MACROS & DEFINES ---
+
+
+// --- ENUMS & STRUCTS ---
 struct Size
 {
 	float Width;
@@ -50,62 +58,118 @@ struct Size
 	}
 };
 
+// --- FORWARD DECLARATIONS ---
+
+
 class UIElement : public GraphicBase
 {
 	friend class UIPanel;
-
+// - INTERFACE -
 public:
+	// --- CONSTRUCTORS & DESTRUCTOR ---
 	virtual ~UIElement();
 
-	virtual void Render();
+	// --- CORE FUNCTIONS ---
+	// bool Initialize();
 	virtual void Update();
+	virtual void Render();
 
+	// --- VIRTUAL FUNCTIONS ---
+
+
+	// --- CLASS API ---
+
+
+	// --- GETTERS & SETTERS ---
+	Position GetPosition() const { return m_localPosition; }
+	float GetPositionLeft() const { return m_localPosition.X; }
+	float GetPositionTop() const { return m_localPosition.Y; }
+	float GetAbsoluteLeft() { return m_absolutePosition.X; }
+	float GetAbsoluteTop() { return m_absolutePosition.Y; }
 	void SetPosition(Position position);
 	void SetPosition(float x, float y);
-	Position GetPosition() { return m_localPosition; }
-	float GetPositionLeft() { return m_localPosition.X; }
-	float GetPositionTop() { return m_localPosition.Y; }
 
-	void SetSize(Size size) { m_size = size; m_changed = true; }
-	void SetSize(float width, float height) { m_size = { width, height }; m_changed = true; }
-	Size GetSize() { return m_size; }
-	float GetWidth() { return m_size.Width; }
-	float GetHeight() { return m_size.Height; }
+	Size GetSize() const { return m_size; }
+	float GetWidth() const { return m_size.Width; }
+	float GetHeight() const { return m_size.Height; }
+	virtual void SetSize(Size size) { m_size = size; m_changed = true; }
+	virtual void SetSize(float width, float height) { m_size = { width, height }; m_changed = true; }
 
 	void SetZIndex(int index);
-	int GetZIndex();
+	int GetZIndex() const { return m_zIndex; }
 
-	const UIElement* GetParent();
+	const UIElement* GetParent() const { return m_parent; }
+
+	// --- STATIC CLASS API ---
+
 
 protected:
+	// --- CONSTRUCTORS ---
 	UIElement();
 	UIElement(Position position, Size size);
 	UIElement(Position position, Size size, Color backgroundColor);
-	
-	void SetRect(Position position, Size size);
+
+	// --- VIRTUAL FUNCTIONS ---
+	bool CheckMouseOver() const override;
+
+	// --- PROTECTED FUNCTIONS ---
 	void SetRect(float posX, float posY, float sizeX, float sizeY);
+	void SetRect(Position position, Size size);
 	void SetParent(UIElement* element);
-	float GetAbsoluteLeft() { return m_absolutePosition.X; }
-	float GetAbsoluteTop() { return m_absolutePosition.Y; }
 	void UpdateAbsolutePosition();
 	void EnsureVertexMemory(unsigned int vertexCount, unsigned int indexCount, unsigned int reserveCount);
 
-	bool CheckMouseOver() const override;
+private:
+	// --- CONSTRUCTORS ---
 
-	Position m_absolutePosition{0.0f, 0.0f};
-	Position m_localPosition{0.0f, 0.0f};
-	Size m_size{0.0f, 0.0f};
+
+	// --- PRIVATE FUNCTIONS ---
+	virtual void SortChildren() {}
+
+// - PROPERTIES -
+public:
+	// --- PUBLIC COMPONENT STATES ---
+
+
+	// --- PUBLIC COMPONENT DATA ---
+
+
+protected:
+	// --- INTERNAL CONSTANTS ---
+
+
+	// --- INTERNAL STRUCTS & ENUMS ---
+
+
+	// --- INTERNAL COMPONENT STATES ---
+	bool m_changed{ false };
+
+	// --- INTERNAL COMPONENT DATA ---
+	Position m_absolutePosition{ 0.0f, 0.0f };
+	Position m_localPosition{ 0.0f, 0.0f };
+	Size m_size{ 0.0f, 0.0f };
 	int m_zIndex{ 0 };
 	unsigned long m_vertexCapacity{ 0 };
 	unsigned long m_indexCapacity{ 0 };
-	bool m_changed{ false };
 
 	static XMMATRIX ms_worldMatrix;
 	static XMMATRIX ms_viewMatrix;
 	static XMMATRIX ms_orthoMatrix;
 
 private:
-	virtual void SortChildren() {}
+	// --- PRIVATE CONSTANTS ---
+
+
+	// --- PRIVATE STRUCTS & ENUMS ---
+
+
+	// --- PRIVATE COMPONENT STATES ---
+
+
+	// --- PRIVATE COMPONENT DATA ---
 	UIElement* m_parent{ nullptr };
+
+	// --- STATIC GLOBAL STATES ---
+
 };
 

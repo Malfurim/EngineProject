@@ -11,16 +11,16 @@
 // --- MACROS & DEFINES ---
 
 
-// --- ENUMS & FLAGS ---
-
-
-// --- FORWARD DECLARATIONS ---
+// --- ENUMS & STRUCTS ---
 struct CharacterData
 {
 	float left, right;
 	float top, bottom;
 	int size;
 };
+
+// --- FORWARD DECLARATIONS ---
+
 
 class Font
 {
@@ -29,11 +29,14 @@ public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	Font();
 	~Font();
-
+	// --- CORE FUNCTIONS ---
+	
+	bool Initialize(const std::wstring& filePath, Texture* textureData);
+	// void Update();
+	// void Render();
+	
 	// --- VIRTUAL FUNCTIONS ---
-	virtual bool Initialize(const std::wstring& filePath, Texture* textureData);
-	// virtual void Update();
-	// virtual void Render();
+
 
 	// --- CLASS API ---
 	bool LoadCharacterData(const std::wstring& filePath);
@@ -74,6 +77,12 @@ public:
 
 
 protected:
+	// --- INTERNAL CONSTANTS ---
+
+
+	// --- INTERNAL STRUCTS & ENUMS ---
+
+
 	// --- INTERNAL COMPONENT STATES ---
 
 
@@ -81,6 +90,12 @@ protected:
 
 
 private:
+	// --- PRIVATE CONSTANTS ---
+
+
+	// --- PRIVATE STRUCTS & ENUMS ---
+
+
 	// --- PRIVATE COMPONENT STATES ---
 
 

@@ -1,4 +1,6 @@
 #include "Application.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include "Settings.h"
 #include "Window.h"
 #include "DirectXManager.h"
@@ -16,11 +18,21 @@
 
 #include <iomanip>
 
+// --- MACROS & DEFINES ---
 #define STR(str) std::to_wstring(str)
 #define STRC(str) std::to_wstring(str).c_str()
 
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Application* Application::m_instance = nullptr;
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Application::Application()
 {
 }
@@ -37,6 +49,9 @@ Application::Application(const Application& app)
 {
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Application::Initialize()
 {
 	RESOURCE->LoadAssets();
@@ -384,9 +399,42 @@ void Application::Render()
 	DXMANAGER->EndScene();
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Application* Application::Instance()
 {
 	if (m_instance == nullptr)
 		m_instance = new Application();
 	return m_instance;
 }
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+

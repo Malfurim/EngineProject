@@ -1,13 +1,25 @@
 #include "Window.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include <Windowsx.h>
 #include "InputManager.h"
 #include "Interactive.h"
 #include "Settings.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Window* Window::ms_instance = nullptr;
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Window::Window()
 {
     Initialize(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE, FULL_SCREEN);
@@ -32,6 +44,9 @@ Window::~Window()
     ms_instance = nullptr;
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Window::Initialize(int screenWidth, int screenHeight, LPCWSTR title, bool isFullscreen)
 {
     WNDCLASSEX winClass;
@@ -92,7 +107,7 @@ bool Window::Initialize(int screenWidth, int screenHeight, LPCWSTR title, bool i
         windowStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
 
         // Create wanted size of window screen
-        RECT windowRect = {0, 0, screenWidth, screenHeight};
+        RECT windowRect = { 0, 0, screenWidth, screenHeight };
 
         // Adjust the window size to the correct window screen + window border and header
         AdjustWindowRect(&windowRect, windowStyle, FALSE);
@@ -112,11 +127,52 @@ bool Window::Initialize(int screenWidth, int screenHeight, LPCWSTR title, bool i
     return true;
 }
 
-HWND Window::GetHwnd()
+//void Window::Update()
+//{
+//}
+
+//void Window::Render()
+//{
+//}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+Window* Window::Instance()
 {
-    return m_hwnd;
+    if (ms_instance == nullptr)
+        ms_instance = new Window();
+    return ms_instance;
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     PAINTSTRUCT ps;
@@ -239,11 +295,4 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     };
 
     return 0;
-}
-
-Window* Window::Instance()
-{
-    if (ms_instance == nullptr)
-        ms_instance = new Window();
-    return ms_instance;
 }

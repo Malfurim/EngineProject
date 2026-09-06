@@ -1,11 +1,25 @@
 #include "UIImage.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include "DirectXManager.h"
 #include "TextureShader.h"
 #include "Texture.h"
 #include "Deleters.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 TextureShader* UIImage::ms_imageShader = nullptr;
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 UIImage::UIImage() : UIImage({ 0,0 }, { 0,0 }, { 0, 0, 0, 0 })
 {
 }
@@ -23,32 +37,13 @@ UIImage::~UIImage()
 {
 }
 
-void UIImage::Shutdown()
-{
-	SAFE_DELETE(ms_imageShader);
-}
-
-void UIImage::Render()
-{
-	if (!Visibility)
-		return;
-	UIElement::Render();
-	
-	if (m_texture == nullptr)
-		return;
-
-	unsigned int stride = VERTEXSTRUCTSIZE;
-	unsigned int offset = 0;
-
-	DXDEVICECONTEXT->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
-	DXDEVICECONTEXT->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	DXDEVICECONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	ms_imageShader->SetShaderParameters(m_texture->GetTexture());
-	ms_imageShader->SetShaderParameters(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
-	ms_imageShader->Render(m_indexCount);
-	ms_imageShader->Reset();
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool UIImage::Initialize()
+//{
+//	return true;
+//}
 
 void UIImage::Update()
 {
@@ -80,6 +75,46 @@ void UIImage::Update()
 	}
 }
 
+void UIImage::Render()
+{
+	if (!Visibility)
+		return;
+	UIElement::Render();
+
+	if (m_texture == nullptr)
+		return;
+
+	unsigned int stride = VERTEXSTRUCTSIZE;
+	unsigned int offset = 0;
+
+	DXDEVICECONTEXT->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
+	DXDEVICECONTEXT->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	DXDEVICECONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	ms_imageShader->SetShaderParameters(m_texture->GetTexture());
+	ms_imageShader->SetShaderParameters(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
+	ms_imageShader->Render(m_indexCount);
+	ms_imageShader->Reset();
+}
+
+void UIImage::Shutdown()
+{
+	SAFE_DELETE(ms_imageShader);
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIImage::SetSize(Size size)
 {
 	m_size = size;
@@ -92,14 +127,6 @@ void UIImage::SetSize(float width, float height)
 	m_size = { width, height };
 	m_changed = true;
 	CheckMinimalSize();
-}
-
-void UIImage::CheckMinimalSize()
-{
-	if (m_size.Width < m_borderSize * 2)
-		m_size.Width = m_borderSize * 2;
-	if (m_size.Height < m_borderSize * 2)
-		m_size.Height = m_borderSize * 2;
 }
 
 void UIImage::SetImage(Texture* texture)
@@ -121,6 +148,32 @@ void UIImage::SetBorder(float size)
 
 	(m_borderSize == 0.0f) ? EnsureVertexMemory(4, 6, 0) : EnsureVertexMemory(36, 54, 0);
 	LoadBuffers();
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void UIImage::CheckMinimalSize()
+{
+	if (m_size.Width < m_borderSize * 2)
+		m_size.Width = m_borderSize * 2;
+	if (m_size.Height < m_borderSize * 2)
+		m_size.Height = m_borderSize * 2;
 }
 
 void UIImage::ConfirmShader()

@@ -32,7 +32,7 @@ Font::~Font()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	CORE FUNCTIONS											//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Font::Initialize(const std::wstring& filePath, Texture* textureData)
 {
@@ -54,6 +54,11 @@ bool Font::Initialize(const std::wstring& filePath, Texture* textureData)
 //void Font::Render()
 //{
 //}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CLASS API												//

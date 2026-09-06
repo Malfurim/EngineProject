@@ -1,14 +1,27 @@
 #include "UIElement.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include "Settings.h"
 #include "DirectXManager.h"
 #include "InputManager.h"
 #include "Deleters.h"
 #include "Utils.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 XMMATRIX UIElement::ms_worldMatrix = XMMatrixIdentity();
 XMMATRIX UIElement::ms_viewMatrix = XMMatrixMultiply(XMMatrixIdentity(), XMMatrixTranslation(0.0f, 0.0f, 1.0f));
 XMMATRIX UIElement::ms_orthoMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0.0f, SCREEN_NEAR, SCREEN_DEPTH);
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 UIElement::UIElement() : UIElement({ 0, 0 }, { 0, 0 }, { 0, 0, 0, 0 })
 {
 }
@@ -31,10 +44,13 @@ UIElement::~UIElement()
 	m_parent = nullptr;
 }
 
-void UIElement::Render()
-{
-	GraphicBase::Render(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool UIElement::Initialize()
+//{
+//	return true;
+//}
 
 void UIElement::Update()
 {
@@ -77,13 +93,26 @@ void UIElement::Update()
 	m_changed = false;
 }
 
-const UIElement* UIElement::GetParent()
+void UIElement::Render()
 {
-	return m_parent;
+	GraphicBase::Render(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIElement::SetPosition(Position position)
-{ 
+{
 	m_localPosition = position;
 	UpdateAbsolutePosition();
 	m_changed = true;
@@ -95,6 +124,28 @@ void UIElement::SetPosition(float x, float y)
 	m_changed = true;
 }
 
+void UIElement::SetZIndex(int index)
+{
+	m_zIndex = index;
+	m_changed = true;
+	if (m_parent == nullptr)
+		return;
+	m_parent->SortChildren();
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIElement::SetRect(float posX, float posY, float sizeX, float sizeY)
 {
 	SetRect({ posX, posY }, { sizeX, sizeY });
@@ -113,20 +164,6 @@ void UIElement::SetParent(UIElement* element)
 	m_parent = element;
 	UpdateAbsolutePosition();
 	m_changed = true;
-}
-
-void UIElement::SetZIndex(int index)
-{
-	m_zIndex = index;
-	m_changed = true;
-	if (m_parent == nullptr)
-		return;
-	m_parent->SortChildren();
-}
-
-int UIElement::GetZIndex()
-{
-	return m_zIndex;
 }
 
 void UIElement::UpdateAbsolutePosition()
@@ -189,4 +226,8 @@ bool UIElement::CheckMouseOver() const
 
 	return (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom);
 }
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 

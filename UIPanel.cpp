@@ -1,7 +1,23 @@
 #include "UIPanel.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include <algorithm>
 #include "Deleters.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 UIPanel::UIPanel() : UIPanel({ 0,0 }, { 0,0 }, { 0, 0, 0, 0 })
 {
 }
@@ -19,14 +35,13 @@ UIPanel::~UIPanel()
     SAFE_DELETE_VECTOR(m_children)
 }
 
-void UIPanel::Render()
-{
-    if (!Visibility)
-        return;
-    UIElement::Render();
-    for (auto* child : m_children)
-        child->Render();
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool UIPanel::Initialize()
+//{
+//	return true;
+//}
 
 void UIPanel::Update()
 {
@@ -37,6 +52,23 @@ void UIPanel::Update()
         child->Update();
 }
 
+void UIPanel::Render()
+{
+    if (!Visibility)
+        return;
+    UIElement::Render();
+    for (auto* child : m_children)
+        child->Render();
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIPanel::AddChild(UIElement* element)
 {
     if (element == nullptr)
@@ -45,7 +77,7 @@ void UIPanel::AddChild(UIElement* element)
     if (element->GetParent() != nullptr)
         return;
 
-    if(ContainsChild(element))
+    if (ContainsChild(element))
         return;
 
     // Searches for first occurance when already added element has higher z index than currently being added element and saves it's index to add to correct position
@@ -56,13 +88,6 @@ void UIPanel::AddChild(UIElement* element)
     element->SetParent(this);
     m_children.insert(index, element);
     element->Update();
-}
-
-UIElement* UIPanel::GetChild(int index)
-{
-    if (index >= m_children.size() || index < 0)
-        return nullptr;
-    return m_children[index];
 }
 
 bool UIPanel::ContainsChild(UIElement* element)
@@ -129,3 +154,33 @@ UIElement* UIPanel::GetElementAtPosition(float x, float y)
     }
     return this;
 }
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+UIElement* UIPanel::GetChild(int index)
+{
+    if (index >= m_children.size() || index < 0)
+        return nullptr;
+    return m_children[index];
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+

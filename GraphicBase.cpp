@@ -1,4 +1,6 @@
 #include "GraphicBase.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include <d3d11.h>
 #include <fstream>
 #include "DirectXManager.h"
@@ -7,8 +9,20 @@
 #include "Shader.h"
 #include "Deleters.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Shader* GraphicBase::ms_shader = nullptr;
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 GraphicBase::GraphicBase()
 {
 	if (ms_shader == nullptr)
@@ -24,27 +38,13 @@ GraphicBase::~GraphicBase()
 	SAFE_RELEASE(m_indexBuffer);
 }
 
-void GraphicBase::Shutdown()
-{
-	SAFE_DELETE(ms_shader);
-}
-
-void GraphicBase::Render(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
-{
-	if (m_background == BACKGROUND_NONE)
-		return;
-	
-	unsigned int stride = sizeof(SPCVertex);
-	unsigned int offset = 0;
-
-	DXDEVICECONTEXT->IASetVertexBuffers(0, 1, &m_vertexBufferBackground, &stride, &offset);
-	DXDEVICECONTEXT->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	DXDEVICECONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	ms_shader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
-	ms_shader->Render(m_indexCount);
-	ms_shader->Reset();
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool GraphicBase::Initialize()
+//{
+//	return true;
+//}
 
 void GraphicBase::Update()
 {
@@ -70,6 +70,41 @@ void GraphicBase::Update()
 	DXDEVICECONTEXT->Unmap(m_vertexBufferBackground, 0);
 }
 
+void GraphicBase::Render(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
+{
+	if (m_background == BACKGROUND_NONE)
+		return;
+
+	unsigned int stride = sizeof(SPCVertex);
+	unsigned int offset = 0;
+
+	DXDEVICECONTEXT->IASetVertexBuffers(0, 1, &m_vertexBufferBackground, &stride, &offset);
+	DXDEVICECONTEXT->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	DXDEVICECONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	ms_shader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
+	ms_shader->Render(m_indexCount);
+	ms_shader->Reset();
+}
+
+void GraphicBase::Shutdown()
+{
+	SAFE_DELETE(ms_shader);
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void GraphicBase::SetBackgroundColor(Color color)
 {
 	m_backgroundColor = color;
@@ -79,6 +114,19 @@ void GraphicBase::SetBackgroundColor(Color color)
 	GraphicBase::Update();
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool GraphicBase::LoadBuffers()
 {
 	if (m_vertexCount == 0)
@@ -99,6 +147,9 @@ bool GraphicBase::LoadBuffers()
 	return true;
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool GraphicBase::SetVertexBuffer()
 {
 	SAFE_RELEASE(m_vertexBuffer);
@@ -157,9 +208,4 @@ bool GraphicBase::SetIndexBuffer()
 	}
 	
 	return true;
-}
-
-Color GraphicBase::GetBackgroundColor()
-{
-	return m_backgroundColor;
 }

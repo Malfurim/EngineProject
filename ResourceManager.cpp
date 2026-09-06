@@ -1,4 +1,6 @@
 #include "ResourceManager.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include "Window.h"
 #include "DirectXManager.h"
 #include "Texture.h"
@@ -6,8 +8,20 @@
 #include "Font.h"
 #include "Utils.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 ResourceManager* ResourceManager::ms_instance = nullptr;
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 ResourceManager::ResourceManager()
 {
 }
@@ -18,7 +32,30 @@ ResourceManager::~ResourceManager()
 	m_modelMap.clear();
 	ms_instance = nullptr;
 }
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool ResourceManager::Initialize()
+//{
+//	return true;
+//}
 
+//void ResourceManager::Update()
+//{
+//}
+
+//void ResourceManager::Render()
+//{
+//}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void ResourceManager::LoadAssets(const std::wstring& directoryPath)
 {
 	std::wstring basePath = directoryPath;
@@ -33,6 +70,62 @@ void ResourceManager::LoadAssets(const std::wstring& directoryPath)
 	ScanDirectory(basePath + L"/fonts", &ResourceManager::LoadFont);
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+Texture* ResourceManager::GetTexture(std::wstring name)
+{
+	auto resource = m_textureMap.find(name);
+	if (resource != m_textureMap.end())
+	{
+		return resource->second;
+	}
+	return nullptr;
+}
+
+Model* ResourceManager::GetModel(std::wstring name)
+{
+	auto resource = m_modelMap.find(name);
+	if (resource != m_modelMap.end())
+	{
+		return resource->second;
+	}
+	return nullptr;
+}
+
+Font* ResourceManager::GetFont(std::wstring name)
+{
+	auto resource = m_fontMap.find(name);
+	if (resource != m_fontMap.end())
+	{
+		return resource->second;
+	}
+	return nullptr;
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+ResourceManager* ResourceManager::Instance()
+{
+	if (ms_instance == nullptr)
+		ms_instance = new ResourceManager();
+	return ms_instance;
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void ResourceManager::ScanDirectory(const std::wstring& directoryPath, void (ResourceManager::*loadFunc)(const std::wstring&))
 {
 	HANDLE dir;
@@ -132,39 +225,3 @@ void ResourceManager::LoadFont(const std::wstring& path)
 	m_fontMap[name] = font;
 }
 
-Texture* ResourceManager::GetTexture(std::wstring name)
-{
-	auto resource = m_textureMap.find(name);
-	if (resource != m_textureMap.end())
-	{
-		return resource->second;
-	}
-	return nullptr;
-}
-
-Model* ResourceManager::GetModel(std::wstring name)
-{
-	auto resource = m_modelMap.find(name);
-	if (resource != m_modelMap.end())
-	{
-		return resource->second;
-	}
-	return nullptr;
-}
-
-Font* ResourceManager::GetFont(std::wstring name)
-{
-	auto resource = m_fontMap.find(name);
-	if (resource != m_fontMap.end())
-	{
-		return resource->second;
-	}
-	return nullptr;
-}
-
-ResourceManager* ResourceManager::Instance()
-{
-	if (ms_instance == nullptr)
-		ms_instance = new ResourceManager();
-	return ms_instance;
-}

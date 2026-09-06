@@ -1,4 +1,6 @@
 #include "Shader.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include <d3dcompiler.h>
 #include <fstream>
 #include "Window.h"
@@ -6,8 +8,21 @@
 #include "Deleters.h"
 #include "Utils.h"
 
-// Default constructor for color shader
-Shader::Shader()
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+Shader::Shader()		// Default constructor for color shader
 {
 	ID3D10Blob* vertexShaderBuffer = nullptr;
 	ID3D10Blob* pixelShaderBuffer = nullptr;
@@ -23,6 +38,18 @@ Shader::~Shader()
 	SAFE_RELEASE(m_pixelShader);
 	SAFE_RELEASE(m_vertexShader);
 }
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool Shader::Initialize()
+//{
+//	return true;
+//}
+
+//void Shader::Update()
+//{
+//}
 
 void Shader::Render(int indexCount)
 {
@@ -44,6 +71,19 @@ void Shader::Reset()
 	DXDEVICECONTEXT->PSSetShader(nullptr, nullptr, 0);
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Shader::SetShaderParameters(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
 {
 	HRESULT result;
@@ -76,48 +116,69 @@ bool Shader::SetShaderParameters(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMA
 	return true;
 }
 
-void Shader::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWSTR shaderFileName)
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+bool Shader::InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Blob* pixelShaderBuffer)
 {
-	char* compileErrors = (char*)errorMessage->GetBufferPointer();
-	unsigned long bufferSize = errorMessage->GetBufferSize();
+	HRESULT result;
+	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
+	unsigned int numElements;
+	D3D11_BUFFER_DESC matrixBufferDesc;
 
-	std::ofstream fout;
-
-	// Open file to write
-	fout.open("shader-error.txt");
-
-	for (unsigned int i = 0; i < bufferSize; i++)
+	// Create vertex shader buffer
+	result = DXDEVICE->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), nullptr, &m_vertexShader);
+	if (FAILED(result))
 	{
-		fout << compileErrors[i];
+		MessageBox(NULL, L"failed on vertex", L"fail", MB_OK);
+		return false;
 	}
 
-	// Close file
-	fout.close();
-
-	// Release
-	errorMessage->Release();
-	errorMessage = nullptr;
-
-	MessageBox(hwnd, L"Error compiling shader. Check shader-error.txt for message.", shaderFileName, MB_OK);
-}
-
-std::string Shader::LoadShaderSourceFile(const std::string& filename)
-{
-	std::string path = "assets/shaders/" + filename + ".hlsl";
-	std::ifstream file(path);
-
-	if (file.fail())
+	// Create pixel shader buffer
+	result = DXDEVICE->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), nullptr, &m_pixelShader);
+	if (FAILED(result))
 	{
-		MessageBox(WINDOWHWND, L"Could not open HLSL source file!", L"Shader Error", MB_OK);
-		return "";
+		MessageBox(NULL, L"failed on pixel", L"fail", MB_OK);
+		return false;
 	}
 
-	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	file.close();
+	if (!InitializeLayout(vertexShaderBuffer))
+	{
+		MessageBox(NULL, L"failed on layout", L"fail", MB_OK);
+		return false;
+	}
 
-	return content;
+	// Release shader buffers
+	SAFE_RELEASE(vertexShaderBuffer);
+	SAFE_RELEASE(pixelShaderBuffer);
+
+	// Setup the matrix buffer description
+	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
+	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	matrixBufferDesc.MiscFlags = 0;
+	matrixBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer
+	result = DXDEVICE->CreateBuffer(&matrixBufferDesc, nullptr, &m_matrixBuffer);
+	if (FAILED(result))
+	{
+		MessageBox(NULL, L"failed on matrix", L"fail", MB_OK);
+		return false;
+	}
+
+	return true;
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void Shader::GetShaderBuffers(ID3D10Blob** vertexShaderBuffer, ID3D10Blob** pixelShaderBuffer, const std::string& hlslFilename, const char* shaderVertexFunctionEntry, const char* shaderPixelFunctionEntry, const char* shaderVertexName, const char* shaderPixelName)
 {
 	*vertexShaderBuffer = LoadCompiledShader(shaderVertexName);
@@ -144,6 +205,9 @@ void Shader::GetShaderBuffers(ID3D10Blob** vertexShaderBuffer, ID3D10Blob** pixe
 	}
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 ID3D10Blob* Shader::LoadCompiledShader(const std::string& shaderName)
 {
 	std::string shaderPath = "assets/shaders/" + shaderName + ".cso";
@@ -156,7 +220,7 @@ ID3D10Blob* Shader::LoadCompiledShader(const std::string& shaderName)
 	file.seekg(0, std::ios::beg);
 	file.read(shaderCode, size);
 	file.close();
-	
+
 	ID3D10Blob* buffer = nullptr;
 	HRESULT result = D3D10CreateBlob(size, &buffer);
 	if (FAILED(result))
@@ -210,58 +274,6 @@ ID3D10Blob* Shader::CompileShader(const char* shaderCode, SIZE_T shaderLength, c
 	return shaderBuffer;
 }
 
-bool Shader::InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Blob* pixelShaderBuffer)
-{
-	HRESULT result;
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
-	unsigned int numElements;
-	D3D11_BUFFER_DESC matrixBufferDesc;
-
-	// Create vertex shader buffer
-	result = DXDEVICE->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), nullptr, &m_vertexShader);
-	if (FAILED(result))
-	{
-		MessageBox(NULL, L"failed on vertex", L"fail", MB_OK);
-		return false;
-	}
-
-	// Create pixel shader buffer
-	result = DXDEVICE->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), nullptr, &m_pixelShader);
-	if (FAILED(result))
-	{
-		MessageBox(NULL, L"failed on pixel", L"fail", MB_OK);
-		return false;
-	}
-	
-	if (!InitializeLayout(vertexShaderBuffer))
-	{
-		MessageBox(NULL, L"failed on layout", L"fail", MB_OK);
-		return false;
-	}
-	
-	// Release shader buffers
-	SAFE_RELEASE(vertexShaderBuffer);
-	SAFE_RELEASE(pixelShaderBuffer);
-
-	// Setup the matrix buffer description
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer
-	result = DXDEVICE->CreateBuffer(&matrixBufferDesc, nullptr, &m_matrixBuffer);
-	if (FAILED(result))
-	{
-		MessageBox(NULL, L"failed on matrix", L"fail", MB_OK);
-		return false;
-	}
-	
-	return true;
-}
-
 bool Shader::InitializeLayout(ID3D10Blob* vertexShaderBuffer)
 {
 	// Setup the layout of the data that goes into the shader
@@ -294,3 +306,46 @@ bool Shader::InitializeLayout(ID3D10Blob* vertexShaderBuffer)
 
 	return true;
 }
+
+void Shader::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWSTR shaderFileName)
+{
+	char* compileErrors = (char*)errorMessage->GetBufferPointer();
+	unsigned long bufferSize = errorMessage->GetBufferSize();
+
+	std::ofstream fout;
+
+	// Open file to write
+	fout.open("shader-error.txt");
+
+	for (unsigned int i = 0; i < bufferSize; i++)
+	{
+		fout << compileErrors[i];
+	}
+
+	// Close file
+	fout.close();
+
+	// Release
+	errorMessage->Release();
+	errorMessage = nullptr;
+
+	MessageBox(hwnd, L"Error compiling shader. Check shader-error.txt for message.", shaderFileName, MB_OK);
+}
+
+std::string Shader::LoadShaderSourceFile(const std::string& filename)
+{
+	std::string path = "assets/shaders/" + filename + ".hlsl";
+	std::ifstream file(path);
+
+	if (file.fail())
+	{
+		MessageBox(WINDOWHWND, L"Could not open HLSL source file!", L"Shader Error", MB_OK);
+		return "";
+	}
+
+	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	file.close();
+
+	return content;
+}
+

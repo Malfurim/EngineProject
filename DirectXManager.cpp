@@ -46,8 +46,9 @@ DirectXManager::~DirectXManager()
 	ms_instance = nullptr;
 }
 
+
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	CORE FUNCTIONS											//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool isFullscreen, float screenDepth, float screenNear)
 {
@@ -404,6 +405,11 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 //void DirectXManager::Render()
 //{
 //}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CLASS API												//

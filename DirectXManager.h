@@ -16,7 +16,7 @@
 #define DXDEVICE DirectXManager::Instance()->GetDevice()
 #define DXDEVICECONTEXT DirectXManager::Instance()->GetDeviceContext()
 
-// --- ENUMS & FLAGS ---
+// --- ENUMS & STRUCTS ---
 
 
 // --- FORWARD DECLARATIONS ---
@@ -29,10 +29,13 @@ public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	~DirectXManager();
 
+	// --- CORE FUNCTIONS ---
+	bool Initialize(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool isFullscreen, float screenDepth, float screenNear);
+	// void Update();
+	// void Render();
+
 	// --- VIRTUAL FUNCTIONS ---
-	virtual bool Initialize(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool isFullscreen, float screenDepth, float screenNear);
-	// virtual void Update();
-	// virtual void Render();
+	
 
 	// --- CLASS API ---
 	void BeginScene(float red, float green, float blue, float alpha);
@@ -80,6 +83,12 @@ public:
 
 
 protected:
+	// --- INTERNAL CONSTANTS ---
+
+
+	// --- INTERNAL STRUCTS & ENUMS ---
+
+
 	// --- INTERNAL COMPONENT STATES ---
 
 
@@ -87,6 +96,12 @@ protected:
 
 
 private:
+	// --- PRIVATE CONSTANTS ---
+
+
+	// --- PRIVATE STRUCTS & ENUMS ---
+
+
 	// --- PRIVATE COMPONENT STATES ---
 	bool m_vsync_enabled{ false };
 

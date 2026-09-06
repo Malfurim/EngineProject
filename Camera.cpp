@@ -26,10 +26,10 @@ Camera::Camera()
 Camera::~Camera()
 {
 }
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CORE FUNCTIONS											//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //bool Camera::Initialize()
 //{
 //	return true;
@@ -68,6 +68,11 @@ void Camera::Render()
 	// Finally create the view matrix from the three updated vectors
 	m_viewMatrix = XMMatrixLookAtLH(positionVector, lookAtVector, upVector);
 }
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CLASS API												//
