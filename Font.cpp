@@ -1,8 +1,24 @@
 #include "Font.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include <fstream>
 #include <sstream>
 #include "Utils.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 Font::Font()
 {
 }
@@ -15,6 +31,9 @@ Font::~Font()
 	m_texture = nullptr;
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Font::Initialize(const std::wstring& filePath, Texture* textureData)
 {
 	m_path = filePath;
@@ -28,6 +47,17 @@ bool Font::Initialize(const std::wstring& filePath, Texture* textureData)
 	return true;
 }
 
+//void Font::Update()
+//{
+//}
+
+//void Font::Render()
+//{
+//}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Font::LoadCharacterData(const std::wstring& filePath)
 {
 	std::wifstream file;
@@ -126,16 +156,9 @@ bool Font::LoadCharacterData2(const std::wstring& filePath)
 	return true;
 }
 
-std::wstring Font::GetName()
-{
-	return m_name;
-}
-
-ID3D11ShaderResourceView* Font::GetTexture()
-{
-	return m_texture->GetTexture();
-}
-
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 CharacterData Font::GetCharacter(wchar_t unicodeChar)
 {
 	auto character = m_characters.find(unicodeChar);
@@ -155,7 +178,22 @@ CharacterData Font::GetCharacter(wchar_t unicodeChar)
 	return CharacterData();
 }
 
-float Font::GetFontHeight()
-{
-	return m_fontHeight;
-}
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+

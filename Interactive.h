@@ -7,6 +7,9 @@
 // --- CONSTANTS ---
 static constexpr unsigned int MAX_FOCUS_TYPES = 2;
 
+// --- MACROS & DEFINES ---
+
+
 // --- ENUMS & FLAGS ---
 enum FocusType
 {
@@ -24,7 +27,13 @@ public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	~Interactive();
 
-	// --- EVENT API ---
+	// --- VIRTUAL FUNCTIONS ---
+	// virtual bool Initialize();
+	// virtual void Update();
+	// virtual void Render();
+	virtual void OnTextInput(wchar_t character) {}
+
+	// --- CLASS API ---
 	void HandleLeftClick();
 	void HandleRightClick();
 	void HandleMiddleClick();
@@ -40,28 +49,22 @@ public:
 	void HandleFocus();
 	void HandleFocusLost();
 
-	// --- SETTERS & GETTERS ---
+	// --- GETTERS & SETTERS ---
 	InputState GetRequiredInputState() const { return m_requiredInputState; }
 	FocusType GetFocusType() const { return m_focusType; }
 	bool IsInteractive() const { return m_interactive; }
 	bool IsHover() const { return m_isHover; }
 
-	// --- VIRTUAL EVENT API ---
-	virtual void OnTextInput(wchar_t character) {}
-
-	// --- STATIC EVENT API ---
+	// --- STATIC CLASS API ---
 	static void SetFocus(Interactive* object, FocusType type);
 	static void RemoveFocus(FocusType type);
 	static Interactive* GetFocus(int type) { return ms_focus[type]; }
 
 protected:
-	// --- CONSTRUCTORS & DESTRUCTORS ---
+	// --- CONSTRUCTORS ---
 	Interactive();
 
-	// --- INTERNAL INPUT LOGIC ---
-	void UpdateMouseEvents();
-
-	// --- INTERNAL VIRTUALS ---
+	// --- VIRTUAL FUNCTIONS ---
 	virtual void OnLeftClick();
 	virtual void OnRightClick() {}
 	virtual void OnMiddleClick() {}
@@ -80,12 +83,22 @@ protected:
 	virtual bool CheckMouseOver() const = 0;
 	virtual bool CapturesKeyboard() const { return false; }
 
+	// --- PROTECTED FUNCTIONS ---
+	void UpdateMouseEvents();
+
 private:
+	// --- CONSTRUCTORS ---
+
+
+	// --- PRIVATE FUNCTIONS ---
 
 
 // - PROPERTIES -
 public:
-	// --- PUBLIC EVENT PROPERTIES ---
+	// --- PUBLIC COMPONENT STATES ---
+
+
+	// --- PUBLIC COMPONENT DATA ---
 	Event<Interactive*> LeftClick;
 	Event<Interactive*> RightClick;
 	Event<Interactive*> MiddleClick;
@@ -102,15 +115,22 @@ public:
 	Event<Interactive*> FocusLost;
 
 protected:
-	// --- INTERNAL INTERACTION STATES ---
+	// --- INTERNAL COMPONENT STATES ---
 	InputState m_requiredInputState{ InputState::INPUT_STATE_GAMEPLAY };
 	FocusType m_focusType{ FocusType::FOCUS_TYPE_UI };
 	bool m_interactive{ false };
 	bool m_isHover{ false };
 
-private:
+	// --- INTERNAL DATA VARIABLES ---
 
-	// --- STATIC GLOBAL INTERACTION STATES ---
+private:
+	// --- PRIVATE COMPONENT STATES ---
+
+
+	// --- COMPONENT DATA VARIABLES ---
+
+
+	// --- STATIC GLOBAL STATES ---
 	static Interactive* ms_focus[MAX_FOCUS_TYPES];
 };
 

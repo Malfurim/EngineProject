@@ -6,6 +6,9 @@
 // --- CONSTANTS ---
 
 
+// --- MACROS & DEFINES ---
+
+
 // --- ENUMS & FLAGS ---
 
 
@@ -14,31 +17,65 @@
 
 class $itemname$
 {
-	// - INTERFACE -
+// - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	$itemname$();
 	~$itemname$();
 
-	// --- BASE ENGINE LOOP ---
-	// virtual void Render();
+	// --- VIRTUAL FUNCTIONS ---
+	// virtual bool Initialize();
 	// virtual void Update();
+	// virtual void Render();
+
+	// --- CLASS API ---
+
+
+	// --- GETTERS & SETTERS ---
+
+
+	// --- STATIC CLASS API ---
+
 
 protected:
+	// --- CONSTRUCTORS ---
+
+
+	// --- VIRTUAL FUNCTIONS ---
+
+
+	// --- PROTECTED FUNCTIONS ---
 
 
 private:
+	// --- CONSTRUCTORS ---
 
 
-	// - PROPERTIES -
+	// --- PRIVATE FUNCTIONS ---
+	
+
+// - PROPERTIES -
 public:
+	// --- PUBLIC COMPONENT STATES ---
+
+
+	// --- PUBLIC COMPONENT DATA ---
 
 
 protected:
+	// --- INTERNAL COMPONENT STATES ---
+
+
+	// --- INTERNAL COMPONENT DATA ---
 
 
 private:
-	// --- COMPONENT DATA VARIABLES ---
+	// --- PRIVATE COMPONENT STATES ---
 
+
+	// --- PRIVATE COMPONENT DATA ---
+
+
+	// --- STATIC GLOBAL STATES ---
 
 };

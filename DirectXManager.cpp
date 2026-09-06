@@ -1,10 +1,24 @@
 #include "DirectXManager.h"
+
+// --- ADDITIONAL INCLUDES ---
 #include "Window.h"
 #include "Settings.h"
 #include "Deleters.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 DirectXManager* DirectXManager::ms_instance = nullptr;
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CONSTRUCTORS & DESTRUCTOR								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 DirectXManager::DirectXManager()
 {
 	Initialize(SCREEN_WIDTH, SCREEN_HEIGHT, VSYNC_ENABLED, WINDOWHWND, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
@@ -28,76 +42,13 @@ DirectXManager::~DirectXManager()
 	SAFE_RELEASE(m_deviceContext);
 	SAFE_RELEASE(m_device);
 	SAFE_RELEASE(m_swapChain);
-	/*
-	if (m_alphaEnabledBlendingState)
-	{
-		m_alphaEnabledBlendingState->Release();
-		m_alphaEnabledBlendingState = nullptr;
-	}
 
-	if (m_alphaDisabledBlendingState)
-	{
-		m_alphaDisabledBlendingState->Release();
-		m_alphaDisabledBlendingState = nullptr;
-	}
-
-	if (m_rasterState)
-	{
-		m_rasterState->Release();
-		m_rasterState = nullptr;
-	}
-
-	if (m_depthStencilView)
-	{
-		m_depthStencilView->Release();
-		m_depthStencilView = nullptr;
-	}
-
-	if (m_depthStencilState)
-	{
-		m_depthStencilState->Release();
-		m_depthStencilState = nullptr;
-	}
-
-	if (m_depthDisabledStencilState)
-	{
-		m_depthDisabledStencilState->Release();
-		m_depthDisabledStencilState = nullptr;
-	}
-
-	if (m_depthStencilBuffer)
-	{
-		m_depthStencilBuffer->Release();
-		m_depthStencilBuffer = nullptr;
-	}
-
-	if (m_renderTargetView)
-	{
-		m_renderTargetView->Release();
-		m_renderTargetView = nullptr;
-	}
-
-	if (m_deviceContext)
-	{
-		m_deviceContext->Release();
-		m_deviceContext = nullptr;
-	}
-
-	if (m_device)
-	{
-		m_device->Release();
-		m_device = nullptr;
-	}
-
-	if (m_swapChain)
-	{
-		m_swapChain->Release();
-		m_swapChain = nullptr;
-	}
-	*/
 	ms_instance = nullptr;
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool isFullscreen, float screenDepth, float screenNear)
 {
 	HRESULT result;
@@ -446,6 +397,17 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 	return true;
 }
 
+//void DirectXManager::Update()
+//{
+//}
+
+//void DirectXManager::Render()
+//{
+//}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void DirectXManager::BeginScene(float red, float green, float blue, float alpha)
 {
 	// Setup the color to clear the buffer to
@@ -473,29 +435,10 @@ void DirectXManager::EndScene()
 	}
 }
 
-ID3D11Device* DirectXManager::GetDevice()
-{
-	return m_device;
-}
 
-ID3D11DeviceContext* DirectXManager::GetDeviceContext()
-{
-	return m_deviceContext;
-}
-
-void DirectXManager::GetVideoCardInfo(char* cardName, int& memory)
-{
-	strcpy_s(cardName, 128, m_videoCardDescription);
-	memory = m_videoCardMemory;
-	return;
-}
-
-void DirectXManager::SetBackBufferRenderTarget()
-{
-	// Bind the render target view and depth stencil buffer to the output render pipeline
-	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
-}
-
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void DirectXManager::ResetViewPort()
 {
 	// Set the viewport
@@ -524,9 +467,43 @@ void DirectXManager::EnableBlendState(bool enable)
 		m_deviceContext->OMSetBlendState(m_alphaDisabledBlendingState, blendFactor, 0xffffffff);
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	GETTERS & SETTERS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void DirectXManager::GetVideoCardInfo(char* cardName, int& memory)
+{
+	strcpy_s(cardName, 128, m_videoCardDescription);
+	memory = m_videoCardMemory;
+	return;
+}
+
+void DirectXManager::SetBackBufferRenderTarget()
+{
+	// Bind the render target view and depth stencil buffer to the output render pipeline
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC CLASS API										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 DirectXManager* DirectXManager::Instance()
 {
 	if (ms_instance == nullptr)
 		ms_instance = new DirectXManager();
 	return ms_instance;
 }
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+

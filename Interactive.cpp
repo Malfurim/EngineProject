@@ -3,12 +3,20 @@
 // --- ADDITIONAL INCLUDES ---
 #include "InputManager.h"
 
+// --- MACROS & DEFINES ---
+
+
+// --- FORWARD DECLARATIONS ---
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	STATIC GLOBAL STATES & DATA								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+Interactive* Interactive::ms_focus[MAX_FOCUS_TYPES]{};
+
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-
-Interactive* Interactive::ms_focus[MAX_FOCUS_TYPES]{};
-
 Interactive::Interactive()
 {
 }
@@ -18,7 +26,23 @@ Interactive::~Interactive()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	EVENT API												//
+//	VIRTUAL FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//bool Interactive::Initialize()
+//{
+//	return true;
+//}
+
+//void Interactive::Update()
+//{
+//}
+
+//void Interactive::Render()
+//{
+//}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void Interactive::HandleLeftClick()
 {
@@ -93,30 +117,31 @@ void Interactive::HandleFocusLost()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	SETTERS & GETTERS										//
+//	GETTERS & SETTERS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	STATIC EVENT API										//
+//	STATIC CLASS API										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void Interactive::SetFocus(Interactive* object, FocusType type)
 {
-	if (ms_focus[type] == object)
+	if (ms_focus[type] == object)	// If same element, return
 		return;
-
-	if (object == nullptr)
+	
+	if (object == nullptr)			// If no element, return
 	{
 		RemoveFocus(type);
 		return;
 	}
-
-	if (ms_focus[type] != nullptr)
+	
+	if (ms_focus[type] != nullptr)	// Remove old focus
 	{
-		ms_focus[type]->HandleFocusLost();
+		RemoveFocus(type);
+		//ms_focus[type]->HandleFocusLost();
 	}
-
-	ms_focus[type] = object;
+	
+	ms_focus[type] = object;		// Set new focus
 	ms_focus[type]->HandleFocus();
 	INP->SetInputState(ms_focus[type]->GetRequiredInputState());
 }
@@ -132,7 +157,18 @@ void Interactive::RemoveFocus(FocusType type)
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	INTERNAL INPUT LOGIC									//
+//	VIRTUAL VIRTUALS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void Interactive::OnLeftClick()
+{
+	if (!m_interactive)
+		return;
+
+	Interactive::SetFocus(this, m_focusType);
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void Interactive::UpdateMouseEvents()
 {
@@ -151,13 +187,6 @@ void Interactive::UpdateMouseEvents()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	INTERNAL VIRTUALS										//
+//	PRIVATE FUNCTIONS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void Interactive::OnLeftClick()
-{
-	if (!m_interactive)
-		return;
-
-	Interactive::SetFocus(this, m_focusType);
-}
 
