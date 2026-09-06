@@ -164,13 +164,7 @@ void Interactive::RemoveFocus(FocusType type)
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	PROTECTED VIRTUALS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void Interactive::OnLeftClick()
-{
-	if (!m_interactive)
-		return;
 
-	Interactive::SetFocus(this, m_focusType);
-}
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	PROTECTED FUNCTIONS										//

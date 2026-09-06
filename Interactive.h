@@ -67,7 +67,7 @@ protected:
 	Interactive();
 
 	// --- VIRTUAL FUNCTIONS ---
-	virtual void OnLeftClick();
+	virtual void OnLeftClick() {}
 	virtual void OnRightClick() {}
 	virtual void OnMiddleClick() {}
 

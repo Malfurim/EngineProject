@@ -154,8 +154,9 @@ void Application::Update()
 	if (ISMOUSEPRESSED(MouseButton::MOUSE_BUTTON_LEFT))
 	{
 		UIElement* element = m_userInterface->GetElementAtPosition(MOUSEX, MOUSEY);
-		if (element != nullptr)
+		if (element != nullptr && element->IsInteractive())
 		{
+			Interactive::SetFocus(element, FocusType::FOCUS_TYPE_UI);
 			element->HandleLeftClick();
 			xx = element->GetPositionLeft();
 		}
