@@ -61,7 +61,7 @@ uintmax_t GetFileSize(const std::string& filePath)
 
 int CountOf(const std::wstring& text, wchar_t character)
 {
-	return static_cast<int>(std::count(text.begin(), text.end(), character));
+	return static_cast<int>(std::count(text.begin(), text.end(), character));	// using int(std::count()) doesn't make it faster
 }
 
 std::wstring ToWStringWithPrecision(float value, int precision)

@@ -33,29 +33,32 @@ public:
 	// void Render();
 	
 	// --- VIRTUAL FUNCTIONS ---
-	virtual void OnTextInput(wchar_t character) {}
+	virtual void OnCharInput(wchar_t character) {}
+	virtual void OnKeyDown(wchar_t key) {}
+	virtual void OnKeyUp(wchar_t key) {}
 
 	// --- CLASS API ---
-	void HandleLeftClick();
-	void HandleRightClick();
-	void HandleMiddleClick();
+	void LeftClick(float mouseX, float mouseY);
+	void RightClick(float mouseX, float mouseY);
+	void MiddleClick(float mouseX, float mouseY);
 
-	void HandleLeftRelease();
-	void HandleRightRelease();
-	void HandleMiddleRelease();
+	void LeftRelease(float mouseX, float mouseY);
+	void RightRelease(float mouseX, float mouseY);
+	void MiddleRelease(float mouseX, float mouseY);
 
-	void HandleMouseEnter();
-	void HandleMouseLeave();
-	void HandleMouseMove(int x, int y);
+	void MouseEnter();
+	void MouseLeave();
+	void MouseMove(float mouseX, float mouseY);
 
-	void HandleFocus();
-	void HandleFocusLost();
+	void Focus();
+	void FocusLost();
 
 	// --- GETTERS & SETTERS ---
 	InputState GetRequiredInputState() const { return m_requiredInputState; }
 	FocusType GetFocusType() const { return m_focusType; }
 	bool IsInteractive() const { return m_interactive; }
 	bool IsHover() const { return m_isHover; }
+	bool IsFocused() const { return (ms_focus[m_focusType] == this); }
 
 	// --- STATIC CLASS API ---
 	static void SetFocus(Interactive* object, FocusType type);
@@ -67,20 +70,20 @@ protected:
 	Interactive();
 
 	// --- VIRTUAL FUNCTIONS ---
-	virtual void OnLeftClick() {}
-	virtual void OnRightClick() {}
-	virtual void OnMiddleClick() {}
+	virtual void LeftClickInternal(float mouseX, float mouseY) {}
+	virtual void RightClickInternal(float mouseX, float mouseY) {}
+	virtual void MiddleClickInternal(float mouseX, float mouseY) {}
 
-	virtual void OnLeftRelease() {}
-	virtual void OnRightRelease() {}
-	virtual void OnMiddleRelease() {}
+	virtual void LeftReleaseInternal(float mouseX, float mouseY) {}
+	virtual void RightReleaseInternal(float mouseX, float mouseY) {}
+	virtual void MiddleReleaseInternal(float mouseX, float mouseY) {}
 
-	virtual void OnMouseEnter() {}
-	virtual void OnMouseLeave() {}
-	virtual void OnMouseMove(int x, int y) {}
+	virtual void MouseEnterInternal() {}
+	virtual void MouseLeaveInternal() {}
+	virtual void MouseMoveInternal(float mouseX, float mouseY) {}
 
-	virtual void OnFocus() {}
-	virtual void OnFocusLost() {}
+	virtual void FocusInternal() {}
+	virtual void FocusLostInternal() {}
 
 	virtual bool CheckMouseOver() const = 0;
 	virtual bool CapturesKeyboard() const { return false; }
@@ -101,20 +104,20 @@ public:
 
 
 	// --- PUBLIC COMPONENT DATA ---
-	Event<Interactive*> LeftClick;
-	Event<Interactive*> RightClick;
-	Event<Interactive*> MiddleClick;
+	Event<Interactive*, float, float> OnLeftClick;
+	Event<Interactive*, float, float> OnRightClick;
+	Event<Interactive*, float, float> OnMiddleClick;
 
-	Event<Interactive*> LeftRelease;
-	Event<Interactive*> RightRelease;
-	Event<Interactive*> MiddleRelease;
+	Event<Interactive*, float, float> OnLeftRelease;
+	Event<Interactive*, float, float> OnRightRelease;
+	Event<Interactive*, float, float> OnMiddleRelease;
 
-	Event<Interactive*> MouseEnter;
-	Event<Interactive*> MouseLeave;
-	Event<Interactive*, int, int> MouseMove;
+	Event<Interactive*> OnMouseEnter;
+	Event<Interactive*> OnMouseLeave;
+	Event<Interactive*, float, float> OnMouseMove;
 
-	Event<Interactive*> Focus;
-	Event<Interactive*> FocusLost;
+	Event<Interactive*> OnFocus;
+	Event<Interactive*> OnFocusLost;
 
 protected:
 	// --- INTERNAL CONSTANTS ---

@@ -36,9 +36,17 @@ enum VerticalTextAlignment
 // --- FORWARD DECLARATIONS ---
 class FontShader;
 class Font;
+struct CharacterData;
 
 class UIText : public UIElement
 {
+	// Has to remain at the top as exception for it being useable in function parameters
+	enum CursorDirection
+	{
+		CURSOR_DIRECTION_LEFT = -1,
+		CURSOR_DIRECTION_RIGHT = 1,
+	};
+
 // - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
@@ -53,7 +61,8 @@ public:
 	static void Shutdown();
 
 	// --- VIRTUAL FUNCTIONS ---
-	void OnTextInput(wchar_t character) override;
+	void OnCharInput(wchar_t character) override;
+	void OnKeyDown(wchar_t key) override;
 	bool CapturesKeyboard() const override { return (m_properties & TextProperty::TEXT_PROPERTY_EDITABLE); }
 
 	// --- CLASS API ---
@@ -64,15 +73,18 @@ public:
 	std::wstring GetText() const { return m_text; }
 	float GetFontHeight() const { return m_fontHeight; }
 	float GetTextWidth() const { return m_textWidth; }
+	int GetMaxLength() const { return m_maxLength; }
 
 	void SetText(std::wstring text);
 	void SetFont(Font* font);
 	void SetFontSize(float size);
 	void SetFontColor(Color color);
+	void SetCursorColor(Color color);
 	void SetTextAlignment(HorizontalTextAlignment horizontalTextAlignment);
 	void SetTextAlignment(VerticalTextAlignment verticalTextAlignment);
 	void SetTextAlignment(HorizontalTextAlignment horizontalTextAlignment, VerticalTextAlignment verticalTextAlignment);
 	void SetTextProperties(unsigned int properties);
+	void SetMaxLength(int length);
 
 	unsigned int GetTextProperties() { return m_properties; }
 	bool HasTextProperty(TextProperty property) const { return (m_properties & property) != 0; }
@@ -85,7 +97,9 @@ protected:
 
 
 	// --- VIRTUAL FUNCTIONS ---
-
+	void LeftClickInternal(float mouseX, float mouseY) override;
+	void FocusInternal() override;
+	void FocusLostInternal() override;
 
 	// --- PROTECTED FUNCTIONS ---
 
@@ -96,10 +110,19 @@ private:
 
 	// --- PRIVATE FUNCTIONS ---
 	void ConfirmShader();
-	float CalculateLineWidth(const std::wstring& text);
+	float CalculateLineWidth(const std::wstring& text) const;
 	void CalculateTextWidth();
 	void CalculateGeometry();
+	void SetVertices(unsigned long vertexStartIndex, float left, float top, float width, const CharacterData& data);
+	void SetVertices(unsigned long vertexStartIndex, float left, float top, float width, const CharacterData& data, const Color& color);
+	float GetVerticalStartPosition(size_t lineCount) const;
+	float GetHorizontalStartPosition(const std::wstring& line) const;
 	void EnsureInputState();
+	void SetVertexMemory();
+	void MoveTextCursor(CursorDirection direction);
+	void MoveTextCursor(float positionX, float positionY);
+	void CursorBlink();
+	void ResetBlink();
 
 // - PROPERTIES -
 public:
@@ -131,16 +154,27 @@ private:
 
 	// --- PRIVATE COMPONENT STATES ---
 	unsigned int m_properties{ TextProperty::TEXT_PROPERTY_NONE };
+	bool m_locateCursorIndex{ false };
+	bool m_updateCursorPosition{ false };
+	bool m_cursorBlink{ false };
+	double m_blinkTimer{ 0.0 };
 
 	// --- PRIVATE COMPONENT DATA ---
 	Color m_fontColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+	Color m_cursorColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Font* m_font{ nullptr };
 	float m_fontHeight{ 0.0f };
 	float m_textWidth{ 0.0f };
 	int m_maxLength{ 0 };
+	float m_textTop{ 0.0f };
+	float m_textBottom{ 0.0f };
 
 	HorizontalTextAlignment m_horizontalAlign{ HorizontalTextAlignment::HORIZONTAL_TEXT_ALIGNMENT_LEFT };
 	VerticalTextAlignment m_verticalAlign{ VerticalTextAlignment::VERTICAL_TEXT_ALIGNMENT_TOP };
+
+	int m_cursorIndex{ 0 };
+	Position m_cursorPosition{ 0.0f, 0.0f };
+	TPosition m_cursorRenderPosition{ 0.0f, 0.0f, 0.0f };
 
 	std::wstring m_text;
 

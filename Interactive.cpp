@@ -49,76 +49,76 @@ Interactive::~Interactive()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CLASS API												//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void Interactive::HandleLeftClick()
+void Interactive::LeftClick(float mouseX, float mouseY)
 {
-	OnLeftClick();
-	LeftClick.Invoke(this);
+	LeftClickInternal(mouseX, mouseY);
+	OnLeftClick.Invoke(this, mouseX, mouseY);
 }
 
-void Interactive::HandleRightClick()
+void Interactive::RightClick(float mouseX, float mouseY)
 {
-	OnRightClick();
-	RightClick.Invoke(this);
+	RightClickInternal(mouseX, mouseY);
+	OnRightClick.Invoke(this, mouseX, mouseY);
 }
 
-void Interactive::HandleMiddleClick()
+void Interactive::MiddleClick(float mouseX, float mouseY)
 {
-	OnMiddleClick();
-	MiddleClick.Invoke(this);
-}
-
-
-
-void Interactive::HandleLeftRelease()
-{
-	OnLeftRelease();
-	LeftRelease.Invoke(this);
-}
-
-void Interactive::HandleRightRelease()
-{
-	OnRightRelease();
-	RightRelease.Invoke(this);
-}
-
-void Interactive::HandleMiddleRelease()
-{
-	OnMiddleRelease();
-	MiddleRelease.Invoke(this);
+	MiddleClickInternal(mouseX, mouseY);
+	OnMiddleClick.Invoke(this, mouseX, mouseY);
 }
 
 
 
-void Interactive::HandleMouseEnter()
+void Interactive::LeftRelease(float mouseX, float mouseY)
 {
-	OnMouseEnter();
-	MouseEnter.Invoke(this);
+	LeftReleaseInternal(mouseX, mouseY);
+	OnLeftRelease.Invoke(this, mouseX, mouseY);
 }
 
-void Interactive::HandleMouseLeave()
+void Interactive::RightRelease(float mouseX, float mouseY)
 {
-	OnMouseLeave();
-	MouseLeave.Invoke(this);
+	RightReleaseInternal(mouseX, mouseY);
+	OnRightRelease.Invoke(this, mouseX, mouseY);
 }
 
-void Interactive::HandleMouseMove(int x, int y)
+void Interactive::MiddleRelease(float mouseX, float mouseY)
 {
-	OnMouseMove(x, y);
-	MouseMove.Invoke(this, x, y);
+	MiddleReleaseInternal(mouseX, mouseY);
+	OnMiddleRelease.Invoke(this, mouseX, mouseY);
 }
 
 
 
-void Interactive::HandleFocus()
+void Interactive::MouseEnter()
 {
-	OnFocus();
-	Focus.Invoke(this);
+	MouseEnterInternal();
+	OnMouseEnter.Invoke(this);
 }
 
-void Interactive::HandleFocusLost()
+void Interactive::MouseLeave()
 {
-	OnFocusLost();
-	FocusLost.Invoke(this);
+	MouseLeaveInternal();
+	OnMouseLeave.Invoke(this);
+}
+
+void Interactive::MouseMove(float mouseX, float mouseY)
+{
+	MouseMoveInternal(mouseX, mouseY);
+	OnMouseMove.Invoke(this, mouseX, mouseY);
+}
+
+
+
+void Interactive::Focus()
+{
+	FocusInternal();
+	OnFocus.Invoke(this);
+}
+
+void Interactive::FocusLost()
+{
+	FocusLostInternal();
+	OnFocusLost.Invoke(this);
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -134,20 +134,19 @@ void Interactive::SetFocus(Interactive* object, FocusType type)
 	if (ms_focus[type] == object)	// If same element, return
 		return;
 	
-	if (object == nullptr)			// If no element, return
+	if (object == nullptr)			// If no element, remove focus and return
 	{
 		RemoveFocus(type);
 		return;
 	}
 	
-	if (ms_focus[type] != nullptr)	// Remove old focus
+	if (ms_focus[type] != nullptr)	// If something focused, remove focus
 	{
 		RemoveFocus(type);
-		//ms_focus[type]->HandleFocusLost();
 	}
 	
 	ms_focus[type] = object;		// Set new focus
-	ms_focus[type]->HandleFocus();
+	ms_focus[type]->Focus();		// Call Focus event
 	INP->SetInputState(ms_focus[type]->GetRequiredInputState());
 }
 
@@ -156,7 +155,7 @@ void Interactive::RemoveFocus(FocusType type)
 	if (ms_focus[type] == nullptr)
 		return;
 
-	ms_focus[type]->HandleFocusLost();
+	ms_focus[type]->FocusLost();
 	ms_focus[type] = nullptr;
 	INP->SetInputState(InputState::INPUT_STATE_GAMEPLAY);
 }
@@ -176,12 +175,12 @@ void Interactive::UpdateMouseEvents()
 	if (hover && !m_isHover)
 	{
 		m_isHover = true;
-		OnMouseEnter();
+		MouseEnter();
 	}
 	else if (!hover && m_isHover)
 	{
 		m_isHover = false;
-		OnMouseLeave();
+		MouseLeave();
 	}
 }
 

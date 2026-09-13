@@ -128,7 +128,8 @@ protected:
 
 	int m_vertexCount{ 0 };
 	int m_indexCount{ 0 };
-	int m_index{ 0 };
+	unsigned long m_vertexCapacity{ 0 };
+	unsigned long m_indexCapacity{ 0 };
 
 private:
 	// --- PRIVATE CONSTANTS ---

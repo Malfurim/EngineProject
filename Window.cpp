@@ -194,12 +194,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         INP->KeyDown((unsigned int)wParam);
+        if (Interactive::GetFocus(FocusType::FOCUS_TYPE_UI) != nullptr)
+        {
+            Interactive::GetFocus(FocusType::FOCUS_TYPE_UI)->OnKeyDown((wchar_t)wParam);
+        }
         return 0;
     }
 
     case WM_KEYUP:
     {
         INP->KeyUp((unsigned int)wParam);
+        if (Interactive::GetFocus(FocusType::FOCUS_TYPE_UI) != nullptr)
+        {
+            Interactive::GetFocus(FocusType::FOCUS_TYPE_UI)->OnKeyUp((wchar_t)wParam);
+        }
         return 0;
     }
 
@@ -269,7 +277,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         if (Interactive::GetFocus(FocusType::FOCUS_TYPE_UI) != nullptr)
         {
-            Interactive::GetFocus(FocusType::FOCUS_TYPE_UI)->OnTextInput((wchar_t)wParam);
+            Interactive::GetFocus(FocusType::FOCUS_TYPE_UI)->OnCharInput((wchar_t)wParam);
         }
         return 0;
     }

@@ -34,7 +34,6 @@ UIElement::UIElement(Position position, Size size, Color backgroundColor)
 {
 	m_dynamic = true;
 	EnsureVertexMemory(4, 6, 0);
-	LoadBuffers();
 	SetRect(position, size);
 	SetBackgroundColor(backgroundColor);
 }
@@ -56,7 +55,7 @@ void UIElement::Update()
 {
 	UpdateAbsolutePosition();
 
-	if (!m_changed)
+	if (!IsInvalidated())
 		return;
 
 	float left = m_absolutePosition.X;
@@ -90,7 +89,7 @@ void UIElement::Update()
 	DXDEVICECONTEXT->Unmap(m_vertexBuffer, 0);
 
 	GraphicBase::Update();
-	m_changed = false;
+	Validate();
 }
 
 void UIElement::Render()
@@ -115,19 +114,19 @@ void UIElement::SetPosition(Position position)
 {
 	m_localPosition = position;
 	UpdateAbsolutePosition();
-	m_changed = true;
+	Invalidate();
 }
 void UIElement::SetPosition(float x, float y)
 {
 	m_localPosition = { x, y };
 	UpdateAbsolutePosition();
-	m_changed = true;
+	Invalidate();
 }
 
 void UIElement::SetZIndex(int index)
 {
 	m_zIndex = index;
-	m_changed = true;
+	Invalidate();
 	if (m_parent == nullptr)
 		return;
 	m_parent->SortChildren();
@@ -156,14 +155,14 @@ void UIElement::SetRect(Position position, Size size)
 	m_localPosition = position;
 	m_size = size;
 	UpdateAbsolutePosition();
-	m_changed = true;
+	Invalidate();
 }
 
 void UIElement::SetParent(UIElement* element)
 {
 	m_parent = element;
 	UpdateAbsolutePosition();
-	m_changed = true;
+	Invalidate();
 }
 
 void UIElement::UpdateAbsolutePosition()
@@ -179,7 +178,7 @@ void UIElement::UpdateAbsolutePosition()
 	if (absolutePosition.X != m_absolutePosition.X || absolutePosition.Y != m_absolutePosition.Y)
 	{
 		m_absolutePosition = absolutePosition;
-		m_changed = true;
+		Invalidate();
 	}
 }
 
@@ -208,6 +207,8 @@ void UIElement::EnsureVertexMemory(unsigned int vertexCount, unsigned int indexC
 
 		m_vertexCount = vertexCount;
 		m_indexCount = indexCount;
+
+		LoadBuffers();
 	}
 }
 

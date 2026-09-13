@@ -156,10 +156,10 @@ bool GraphicBase::SetVertexBuffer()
 	SAFE_RELEASE(m_vertexBufferBackground);
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.Usage = (m_dynamic) ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = VERTEXSTRUCTSIZE * m_vertexCount;
+	vertexBufferDesc.Usage = m_dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = VERTEXSTRUCTSIZE * m_vertexCapacity;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = (m_dynamic) ? D3D11_CPU_ACCESS_WRITE : 0;
+	vertexBufferDesc.CPUAccessFlags = m_dynamic ? D3D11_CPU_ACCESS_WRITE : 0;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
@@ -174,7 +174,7 @@ bool GraphicBase::SetVertexBuffer()
 		return false;
 	}
 
-	vertexBufferDesc.ByteWidth = sizeof(SPCVertex) * m_vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(SPCVertex) * m_vertexCapacity;
 	result = DXDEVICE->CreateBuffer(&vertexBufferDesc, nullptr, &m_vertexBufferBackground);
 	if (FAILED(result))
 	{
@@ -190,7 +190,7 @@ bool GraphicBase::SetIndexBuffer()
 
 	D3D11_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCapacity;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;

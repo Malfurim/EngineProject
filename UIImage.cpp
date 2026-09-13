@@ -54,7 +54,7 @@ void UIImage::Update()
 	else
 	{
 		UpdateAbsolutePosition();
-		if (!m_changed)
+		if (!IsInvalidated())
 			return;
 		CalculateGeometry();
 
@@ -71,7 +71,7 @@ void UIImage::Update()
 		DXDEVICECONTEXT->Unmap(m_vertexBuffer, 0);
 
 		GraphicBase::Update();
-		m_changed = false;
+		Validate();
 	}
 }
 
@@ -118,14 +118,14 @@ void UIImage::Shutdown()
 void UIImage::SetSize(Size size)
 {
 	m_size = size;
-	m_changed = true;
+	Invalidate();
 	CheckMinimalSize();
 }
 
 void UIImage::SetSize(float width, float height)
 {
 	m_size = { width, height };
-	m_changed = true;
+	Invalidate();
 	CheckMinimalSize();
 }
 
@@ -134,7 +134,7 @@ void UIImage::SetImage(Texture* texture)
 	if (texture != nullptr)
 	{
 		m_texture = texture;
-		m_changed = true;
+		Invalidate();
 	}
 }
 
@@ -144,10 +144,9 @@ void UIImage::SetBorder(float size)
 		return;
 
 	m_borderSize = size;
-	m_changed = true;
+	Invalidate();
 
 	(m_borderSize == 0.0f) ? EnsureVertexMemory(4, 6, 0) : EnsureVertexMemory(36, 54, 0);
-	LoadBuffers();
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //

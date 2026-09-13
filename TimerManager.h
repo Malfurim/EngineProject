@@ -1,7 +1,7 @@
 #pragma once
 
 // --- INCLUDES ---
-#include <Windows.h>
+#include <cstdint>
 
 // --- CONSTANTS ---
 
@@ -91,7 +91,7 @@ private:
 
 	// --- PRIVATE COMPONENT DATA ---
 	double m_frequency{ 0.0 };
-	INT64 m_previousTime{ 0 };
+	int64_t m_previousTime{ 0 };
 	double m_deltaTime{ 0.0 };
 
 	// --- STATIC GLOBAL STATES ---

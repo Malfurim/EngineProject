@@ -76,10 +76,12 @@ bool Application::Initialize()
 
 	UIText* t1 = new UIText({ 0, 0 }, { 480, 270 }, RESOURCE->GetFont(L"font01"));
 	t1->SetFontSize(20.0f);
+	t1->SetMaxLength(128);
 	t1->SetText(L"My first test\nof TEXT rendering\non multiple lines\nand centered in both\nhorizontal and vertical\npositions...");
 	t1->SetFontColor({ 0.0, 0.8f, 0.0f, 1.0f });
+	t1->SetCursorColor({ 1.0, 1.0f, 1.0f, 1.0f });
 	t1->SetTextAlignment(HORIZONTAL_TEXT_ALIGNMENT_CENTER, VERTICAL_TEXT_ALIGNMENT_MIDDLE);
-	t1->SetTextProperties(TEXT_PROPERTY_EDITABLE);
+	t1->SetTextProperties(TEXT_PROPERTY_EDITABLE | TEXT_PROPERTY_MULTILINE);
 	p1->AddChild(t1);
 
 	p1 = nullptr;
@@ -157,7 +159,7 @@ void Application::Update()
 		if (element != nullptr && element->IsInteractive())
 		{
 			Interactive::SetFocus(element, FocusType::FOCUS_TYPE_UI);
-			element->HandleLeftClick();
+			element->LeftClick(MOUSEX, MOUSEY);
 			xx = element->GetPositionLeft();
 		}
 		else

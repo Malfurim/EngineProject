@@ -1,7 +1,7 @@
 #include "TimerManager.h"
 
 // --- ADDITIONAL INCLUDES ---
-
+#include <Windows.h>
 
 // --- MACROS & DEFINES ---
 
