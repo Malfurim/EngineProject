@@ -295,6 +295,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
+    case WM_SIZE:
+    {
+        INP->UpdateDisplayScale((float)LOWORD(lParam), (float)HIWORD(lParam));
+        return 0;
+    }
+
+    case WM_MENUCHAR:
+    {
+        return MNC_CLOSE << 16;
+    }
+
     default:
     {
         return DefWindowProc(hwnd, message, wParam, lParam);

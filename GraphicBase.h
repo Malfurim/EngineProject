@@ -19,8 +19,8 @@ typedef DirectX::XMFLOAT2 TTextureCoordinate;
 enum BackgroundType
 {
 	BACKGROUND_NONE,
-	BACKGROUND_SOLID,
-	BACKGROUND_TRANSPARENT
+	BACKGROUND_COLOR,
+	BACKGROUND_BORDER,
 };
 
 struct Color
@@ -64,7 +64,7 @@ public:
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
-	virtual void Update();
+	virtual void Update(Color borderColor = { 0.0f, 0.0f, 0.0f, 0.0f });
 	virtual void Render(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix);
 	static void Shutdown();
 

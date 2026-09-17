@@ -42,7 +42,7 @@ $itemname$::~$itemname$()
 //}
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PUBLIC VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
@@ -62,7 +62,7 @@ $itemname$::~$itemname$()
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PROTECTED VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 

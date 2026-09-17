@@ -209,6 +209,17 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 	if (FAILED(result))
 		return false;
 
+	// Get factory of created swap chain
+	IDXGIFactory* swapChainFactory = nullptr;
+	result = m_swapChain->GetParent(__uuidof(IDXGIFactory), (void**)&swapChainFactory);
+	if (FAILED(result))
+		return false;
+
+	// Disable Alt+Enter shortcut
+	swapChainFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
+	swapChainFactory->Release();
+	swapChainFactory = nullptr;
+
 	// Get the pointer to the back buffer
 	result = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
 	if (FAILED(result))

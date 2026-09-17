@@ -75,7 +75,7 @@ public:
 	virtual void Render();
 
 	// --- VIRTUAL FUNCTIONS ---
-
+	
 
 	// --- CLASS API ---
 	void Invalidate() { m_invalidated = true; }
@@ -85,10 +85,14 @@ public:
 	Position GetPosition() const { return m_localPosition; }
 	float GetPositionLeft() const { return m_localPosition.X; }
 	float GetPositionTop() const { return m_localPosition.Y; }
-	float GetAbsoluteLeft() { return m_absolutePosition.X; }
-	float GetAbsoluteTop() { return m_absolutePosition.Y; }
+	float GetAbsoluteLeft() const { return m_absolutePosition.X; }
+	float GetAbsoluteTop() const { return m_absolutePosition.Y; }
+	Color GetBackgroundBorderColor() const { return m_backgroundBorderColor; }
+	float GetBorderSize() const { return m_borderSize; }
 	void SetPosition(Position position);
 	void SetPosition(float x, float y);
+	void SetBackgroundBorderColor(Color color);
+	void SetBorderSize(float size);
 
 	Size GetSize() const { return m_size; }
 	float GetWidth() const { return m_size.Width; }
@@ -112,6 +116,7 @@ protected:
 
 	// --- VIRTUAL FUNCTIONS ---
 	bool CheckMouseOver() const override;
+	virtual void CalculateGeometry();
 
 	// --- PROTECTED FUNCTIONS ---
 	void Validate() { m_invalidated = false; }
@@ -120,6 +125,7 @@ protected:
 	void SetParent(UIElement* element);
 	void UpdateAbsolutePosition();
 	void EnsureVertexMemory(unsigned int vertexCount, unsigned int indexCount, unsigned int reserveCount);
+	void CheckBackgroundType();
 
 private:
 	// --- CONSTRUCTORS ---
@@ -151,6 +157,9 @@ protected:
 	Position m_localPosition{ 0.0f, 0.0f };
 	Size m_size{ 0.0f, 0.0f };
 	int m_zIndex{ 0 };
+
+	Color m_backgroundBorderColor{ 0.0f, 0.0f, 0.0f, 0.0f };
+	float m_borderSize{ 0.0f };
 
 	static XMMATRIX ms_worldMatrix;
 	static XMMATRIX ms_viewMatrix;

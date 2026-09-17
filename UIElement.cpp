@@ -58,23 +58,7 @@ void UIElement::Update()
 	if (!IsInvalidated())
 		return;
 
-	float left = m_absolutePosition.X;
-	float right = left + m_size.Width;
-	float top = m_absolutePosition.Y;
-	float bottom = top + m_size.Height;
-
-	m_vertices[0].position = TPosition{ left, top, 0.0f };
-	m_vertices[0].texCoord = TTextureCoordinate{ 0.0f, 0.0f };
-
-	m_vertices[1].position = TPosition{ right, top, 0.0f };
-	m_vertices[1].texCoord = TTextureCoordinate{ 1.0f, 0.0f };
-
-	m_vertices[2].position = TPosition{ left, bottom, 0.0f };
-	m_vertices[2].texCoord = TTextureCoordinate{ 0.0f, 1.0f };
-
-	m_vertices[3].position = TPosition{ right, bottom, 0.0f };
-	m_vertices[3].texCoord = TTextureCoordinate{ 1.0f, 1.0f };
-
+	CalculateGeometry();
 
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -88,7 +72,8 @@ void UIElement::Update()
 		
 	DXDEVICECONTEXT->Unmap(m_vertexBuffer, 0);
 
-	GraphicBase::Update();
+	(m_borderSize == 0.0f) ? GraphicBase::Update() : GraphicBase::Update(m_backgroundBorderColor);
+	//GraphicBase::Update();
 	Validate();
 }
 
@@ -98,7 +83,7 @@ void UIElement::Render()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PUBLIC VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
@@ -123,6 +108,26 @@ void UIElement::SetPosition(float x, float y)
 	Invalidate();
 }
 
+void UIElement::SetBackgroundBorderColor(Color color)
+{
+	if (m_backgroundBorderColor == color)
+		return;
+	m_backgroundBorderColor = color;
+	GraphicBase::Update(m_backgroundBorderColor);
+}
+
+void UIElement::SetBorderSize(float size)
+{
+	if (size < 0.0f)
+		size = 0.0f;
+	if (m_borderSize == size)
+		return;
+	m_borderSize = size;
+	(m_borderSize == 0.0f) ? EnsureVertexMemory(4, 6, 0) : EnsureVertexMemory(36, 54, 0);
+	CheckBackgroundType();
+	Invalidate();
+}
+
 void UIElement::SetZIndex(int index)
 {
 	m_zIndex = index;
@@ -138,9 +143,71 @@ void UIElement::SetZIndex(int index)
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PROTECTED VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+bool UIElement::CheckMouseOver() const
+{
+	if (!Visibility)
+		return false;
 
+	float mouseX = MOUSEX;
+	float mouseY = MOUSEY;
+
+	float left = m_absolutePosition.X;
+	float right = left + m_size.Width;
+	float top = m_absolutePosition.Y;
+	float bottom = top + m_size.Height;
+
+	return (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom);
+}
+
+void UIElement::CalculateGeometry()
+{
+	if (m_borderSize == 0.0f)
+	{
+		float left = floorf(m_absolutePosition.X);
+		float right = floorf(m_absolutePosition.X + m_size.Width);
+		float top = floorf(m_absolutePosition.Y);
+		float bottom = floorf(m_absolutePosition.Y + m_size.Height);
+
+		m_vertices[0].position = TPosition{ left, top, 0.0f };
+		m_vertices[1].position = TPosition{ right, top, 0.0f };
+		m_vertices[2].position = TPosition{ left, bottom, 0.0f };
+		m_vertices[3].position = TPosition{ right, bottom, 0.0f };
+	}
+	else
+	{
+		// { position }
+		float Xvalues[4]
+		{
+			floorf(m_absolutePosition.X),
+			floorf(m_absolutePosition.X + m_borderSize),
+			floorf(m_absolutePosition.X + m_size.Width - m_borderSize),
+			floorf(m_absolutePosition.X + m_size.Width)
+		};
+		float Yvalues[4]
+		{
+			floorf(m_absolutePosition.Y),
+			floorf(m_absolutePosition.Y + m_borderSize),
+			floorf(m_absolutePosition.Y + m_size.Height - m_borderSize),
+			floorf(m_absolutePosition.Y + m_size.Height)
+		};
+
+		int rect = 0;
+		for (int vertexIndex = 0; vertexIndex < m_vertexCount; vertexIndex += 4)
+		{
+			int x = rect % 3;
+			int y = rect / 3;
+
+			m_vertices[vertexIndex + 0].position = { Xvalues[x + 0], Yvalues[y + 0], 0.0f };
+			m_vertices[vertexIndex + 1].position = { Xvalues[x + 1], Yvalues[y + 0], 0.0f };
+			m_vertices[vertexIndex + 2].position = { Xvalues[x + 0], Yvalues[y + 1], 0.0f };
+			m_vertices[vertexIndex + 3].position = { Xvalues[x + 1], Yvalues[y + 1], 0.0f };
+
+			rect++;
+		}
+	}
+}
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	PROTECTED FUNCTIONS										//
@@ -212,20 +279,14 @@ void UIElement::EnsureVertexMemory(unsigned int vertexCount, unsigned int indexC
 	}
 }
 
-bool UIElement::CheckMouseOver() const
+void UIElement::CheckBackgroundType()
 {
-	if (!Visibility)
-		return false;
-
-	float mouseX = MOUSEX;
-	float mouseY = MOUSEY;
-
-	float left = m_absolutePosition.X;
-	float right = left + m_size.Width;
-	float top = m_absolutePosition.Y;
-	float bottom = top + m_size.Height;
-
-	return (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom);
+	if (m_backgroundColor.a == 0.0f)
+		m_background = BackgroundType::BACKGROUND_NONE;
+	else if (m_borderSize == 0.0f)
+		m_background = BackgroundType::BACKGROUND_COLOR;
+	else
+		m_background = BackgroundType::BACKGROUND_BORDER;
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //

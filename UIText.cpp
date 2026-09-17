@@ -106,7 +106,7 @@ void UIText::Shutdown()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PUBLIC VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIText::OnCharInput(wchar_t character)
 {
@@ -354,7 +354,7 @@ void UIText::SetMaxLength(int length)
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PROTECTED VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIText::LeftClickInternal(float mouseX, float mouseY)
 {
@@ -373,57 +373,6 @@ void UIText::FocusInternal()
 void UIText::FocusLostInternal()
 {
     Invalidate();
-}
-
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	PROTECTED FUNCTIONS										//
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-
-
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	PRIVATE FUNCTIONS										//
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void UIText::ConfirmShader()
-{
-    if (ms_textShader == nullptr)
-        ms_textShader = new FontShader();
-}
-
-float UIText::CalculateLineWidth(const std::wstring& text) const
-{
-    if (m_font == nullptr)
-        return 0.0f;
-
-    float scale = m_fontHeight / m_font->GetFontHeight();
-    float width = 0.0f;
-
-    for (wchar_t character : text)
-    {
-        width += (m_font->GetCharacter(character).size * scale);
-    }
-    return width;
-}
-
-void UIText::CalculateTextWidth()
-{
-    std::vector<std::wstring> lines;
-    std::wstringstream textStream(m_text);
-    std::wstring singleLine;
-    while (std::getline(textStream, singleLine))
-    {
-        lines.push_back(singleLine);
-    }
-
-    if (lines.empty() && !m_text.empty()) lines.push_back(m_text);
-
-    float finalWidth = 0.0f;
-    for (const auto& line : lines)
-    {
-        float lineWidth = CalculateLineWidth(line);
-        if (lineWidth > finalWidth)
-            finalWidth = lineWidth;
-    }
-    m_textWidth = finalWidth;
 }
 
 void UIText::CalculateGeometry()
@@ -474,7 +423,7 @@ void UIText::CalculateGeometry()
         {
             CharacterData data = m_font->GetCharacter(character);
             float renderWidth = data.size * scale;
-            SetVertices(vertexIndex, left, top, renderWidth, data);
+            SetVertices(vertexIndex, floorf(left), floorf(top), floorf(renderWidth), data);
 
             if (m_locateCursorIndex)
             {
@@ -566,7 +515,7 @@ void UIText::CalculateGeometry()
     if (IsFocused())
     {
         CharacterData cursorData = m_font->GetCharacter('|');
-        SetVertices(cursorIndex, cursorPosition.X, cursorPosition.Y, cursorData.size * scale, cursorData, m_cursorColor);
+        SetVertices(cursorIndex, floorf(cursorPosition.X), floorf(cursorPosition.Y), floorf(cursorData.size * scale), cursorData, m_cursorColor);
     }
 
     // If update cursor position requested, set cursor position from indexed character
@@ -579,6 +528,57 @@ void UIText::CalculateGeometry()
     m_vertexCount = vertexIndex + (IsFocused() ? 4 : 0);
     m_indexCount = (vertexIndex / 4) * 6 + (IsFocused() ? 6 : 0);
     m_locateCursorIndex = false;
+}
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void UIText::ConfirmShader()
+{
+    if (ms_textShader == nullptr)
+        ms_textShader = new FontShader();
+}
+
+float UIText::CalculateLineWidth(const std::wstring& text) const
+{
+    if (m_font == nullptr)
+        return 0.0f;
+
+    float scale = m_fontHeight / m_font->GetFontHeight();
+    float width = 0.0f;
+
+    for (wchar_t character : text)
+    {
+        width += (m_font->GetCharacter(character).size * scale);
+    }
+    return width;
+}
+
+void UIText::CalculateTextWidth()
+{
+    std::vector<std::wstring> lines;
+    std::wstringstream textStream(m_text);
+    std::wstring singleLine;
+    while (std::getline(textStream, singleLine))
+    {
+        lines.push_back(singleLine);
+    }
+
+    if (lines.empty() && !m_text.empty()) lines.push_back(m_text);
+
+    float finalWidth = 0.0f;
+    for (const auto& line : lines)
+    {
+        float lineWidth = CalculateLineWidth(line);
+        if (lineWidth > finalWidth)
+            finalWidth = lineWidth;
+    }
+    m_textWidth = finalWidth;
 }
 
 void UIText::SetVertices(unsigned long vertexStartIndex, float left, float top, float width, const CharacterData& data)
@@ -657,23 +657,6 @@ void UIText::SetVertexMemory()
         else
             EnsureVertexMemory(m_text.length() * 4, m_text.length() * 6, 16);
     }
-}
-
-void UIText::MoveTextCursor(CursorDirection direction)
-{
-    int newIndex = m_cursorIndex + direction;
-    if (newIndex < 0)
-        newIndex = 0;
-    if (newIndex > m_text.length())
-        newIndex = m_text.length();
-
-    m_cursorIndex = newIndex;
-    Invalidate();
-}
-
-void UIText::MoveTextCursor(float positionX, float positionY)
-{
-
 }
 
 void UIText::CursorBlink()

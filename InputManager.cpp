@@ -1,6 +1,7 @@
 #include "InputManager.h"
 
 // --- ADDITIONAL INCLUDES ---
+#include "Settings.h"
 #include <string>
 
 // --- MACROS & DEFINES ---
@@ -92,6 +93,12 @@ void InputManager::MouseButtonUp(MouseButton button)
 	{
 		m_mouse[index] = false;
 	}
+}
+
+void InputManager::UpdateDisplayScale(float displayWidth, float displayHeight)
+{
+	m_scaleX = SCREEN_WIDTH / displayWidth;
+	m_scaleY = SCREEN_HEIGHT / displayHeight;
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //

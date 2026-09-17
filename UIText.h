@@ -56,8 +56,8 @@ public:
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
-	void Update();
-	void Render();
+	void Update() override;
+	void Render() override;
 	static void Shutdown();
 
 	// --- VIRTUAL FUNCTIONS ---
@@ -100,6 +100,7 @@ protected:
 	void LeftClickInternal(float mouseX, float mouseY) override;
 	void FocusInternal() override;
 	void FocusLostInternal() override;
+	void CalculateGeometry() override;
 
 	// --- PROTECTED FUNCTIONS ---
 
@@ -112,15 +113,12 @@ private:
 	void ConfirmShader();
 	float CalculateLineWidth(const std::wstring& text) const;
 	void CalculateTextWidth();
-	void CalculateGeometry();
 	void SetVertices(unsigned long vertexStartIndex, float left, float top, float width, const CharacterData& data);
 	void SetVertices(unsigned long vertexStartIndex, float left, float top, float width, const CharacterData& data, const Color& color);
 	float GetVerticalStartPosition(size_t lineCount) const;
 	float GetHorizontalStartPosition(const std::wstring& line) const;
 	void EnsureInputState();
 	void SetVertexMemory();
-	void MoveTextCursor(CursorDirection direction);
-	void MoveTextCursor(float positionX, float positionY);
 	void CursorBlink();
 	void ResetBlink();
 

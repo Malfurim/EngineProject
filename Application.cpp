@@ -82,10 +82,20 @@ bool Application::Initialize()
 	t1->SetCursorColor({ 1.0, 1.0f, 1.0f, 1.0f });
 	t1->SetTextAlignment(HORIZONTAL_TEXT_ALIGNMENT_CENTER, VERTICAL_TEXT_ALIGNMENT_MIDDLE);
 	t1->SetTextProperties(TEXT_PROPERTY_EDITABLE | TEXT_PROPERTY_MULTILINE);
+
+	p1->SetBackgroundBorderColor({ 0.0f, 0.0f, 1.0f, 1.0f });
+	p1->SetBorderSize(2.0f);
 	p1->AddChild(t1);
+
+	UIImage* i1 = new UIImage({ 800, 100 }, { 128, 128 });
+	i1->SetImage(RESOURCE->GetTexture(L"silt"));
+	i1->SetBorderSize(4.0f);
+	m_userInterface->AddChild(i1);
+
 
 	p1 = nullptr;
 	t1 = nullptr;
+	i1 = nullptr;
 
 	m_debug = new UIPanel({ 8, 8 }, { 256, 384 }, { 0.0f, 0.0f, 0.0f, 0.35f });
 	m_userInterface->AddChild(m_debug);

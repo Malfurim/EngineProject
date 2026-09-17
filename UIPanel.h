@@ -28,8 +28,8 @@ public:
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
-	void Update();
-	void Render();
+	void Update() override;
+	void Render() override;
 	
 	// --- VIRTUAL FUNCTIONS ---
 

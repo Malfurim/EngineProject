@@ -61,10 +61,12 @@ public:
 	void MouseButtonDown(MouseButton button);
 	void MouseButtonUp(MouseButton button);
 
+	void UpdateDisplayScale(float displayWidth, float displayHeight);
+
 	// --- GETTERS & SETTERS ---
-	Position GetMousePosition() const { return m_mousePosition; }
-	float GetMouseX() const { return m_mousePosition.X; }
-	float GetMouseY() const { return m_mousePosition.Y; }
+	Position GetMousePosition() const { return { m_mousePosition.X * m_scaleX, m_mousePosition.Y * m_scaleY }; }
+	float GetMouseX() const { return m_mousePosition.X * m_scaleX; }
+	float GetMouseY() const { return m_mousePosition.Y * m_scaleY; }
 
 	void SetMousePosition(Position position) { m_mousePosition = position; }
 	void SetMousePosition(int x, int y) { m_mousePosition = { (float)x, (float)y }; }
@@ -141,6 +143,8 @@ private:
 	bool m_prevMouse[MAX_BUTTONS]{ false };
 
 	// --- PRIVATE COMPONENT DATA ---
+	float m_scaleX{ 1.0f };
+	float m_scaleY{ 1.0f };
 	Position m_mousePosition{ 0, 0 };
 	InputState m_inputState{ InputState::INPUT_STATE_GAMEPLAY };
 

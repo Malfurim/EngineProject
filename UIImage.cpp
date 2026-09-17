@@ -49,30 +49,7 @@ void UIImage::Update()
 {
 	if (!Visibility)
 		return;
-	if (m_borderSize == 0.0f)
-		UIElement::Update();
-	else
-	{
-		UpdateAbsolutePosition();
-		if (!IsInvalidated())
-			return;
-		CalculateGeometry();
-
-		HRESULT result;
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		result = DXDEVICECONTEXT->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-		if (FAILED(result))
-		{
-			return;
-		}
-
-		memcpy((SPDNT2Vertex*)mappedResource.pData, (void*)m_vertices, VERTEXSTRUCTSIZE * m_vertexCount);
-
-		DXDEVICECONTEXT->Unmap(m_vertexBuffer, 0);
-
-		GraphicBase::Update();
-		Validate();
-	}
+	UIElement::Update();
 }
 
 void UIImage::Render()
@@ -103,7 +80,7 @@ void UIImage::Shutdown()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PUBLIC VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
@@ -138,25 +115,75 @@ void UIImage::SetImage(Texture* texture)
 	}
 }
 
-void UIImage::SetBorder(float size)
-{
-	if (m_borderSize == size)
-		return;
-
-	m_borderSize = size;
-	Invalidate();
-
-	(m_borderSize == 0.0f) ? EnsureVertexMemory(4, 6, 0) : EnsureVertexMemory(36, 54, 0);
-}
-
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	STATIC CLASS API										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PROTECTED VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void UIImage::CalculateGeometry()
+{
+	if (m_borderSize == 0.0f)
+	{
+		float left = floorf(m_absolutePosition.X);
+		float right = floorf(m_absolutePosition.X + m_size.Width);
+		float top = floorf(m_absolutePosition.Y);
+		float bottom = floorf(m_absolutePosition.Y + m_size.Height);
+
+		m_vertices[0].position = TPosition{ left, top, 0.0f };
+		m_vertices[0].texCoord = TTextureCoordinate{ 0.0f, 0.0f };
+
+		m_vertices[1].position = TPosition{ right, top, 0.0f };
+		m_vertices[1].texCoord = TTextureCoordinate{ 1.0f, 0.0f };
+
+		m_vertices[2].position = TPosition{ left, bottom, 0.0f };
+		m_vertices[2].texCoord = TTextureCoordinate{ 0.0f, 1.0f };
+
+		m_vertices[3].position = TPosition{ right, bottom, 0.0f };
+		m_vertices[3].texCoord = TTextureCoordinate{ 1.0f, 1.0f };
+	}
+	else
+	{
+		// { position }, { texcoord }
+		float Xvalues[4][2]
+		{
+			{ { floorf(m_absolutePosition.X)								},	{ 0.0f											} },
+			{ { floorf(m_absolutePosition.X + m_borderSize)					},	{ 0.0f + m_borderSize / m_texture->GetWidth()	} },
+			{ { floorf(m_absolutePosition.X + m_size.Width - m_borderSize)	},	{ 1.0f - m_borderSize / m_texture->GetWidth()	} },
+			{ { floorf(m_absolutePosition.X + m_size.Width)					},	{ 1.0f											} }
+		};
+		float Yvalues[4][2]
+		{
+			{ { floorf(m_absolutePosition.Y)								},	{ 0.0f											} },
+			{ { floorf(m_absolutePosition.Y + m_borderSize)					},	{ 0.0f + m_borderSize / m_texture->GetHeight()	} },
+			{ { floorf(m_absolutePosition.Y + m_size.Height - m_borderSize)	},	{ 1.0f - m_borderSize / m_texture->GetHeight()	} },
+			{ { floorf(m_absolutePosition.Y + m_size.Height)				},	{ 1.0f											} }
+		};
+
+		int rect = 0;
+		for (int vertexIndex = 0; vertexIndex < m_vertexCount; vertexIndex += 4)
+		{
+			int x = rect % 3;
+			int y = rect / 3;
+
+			m_vertices[vertexIndex + 0].position = { Xvalues[x + 0][0], Yvalues[y + 0][0], 0.0f };
+			m_vertices[vertexIndex + 0].texCoord = { Xvalues[x + 0][1], Yvalues[y + 0][1] };
+
+			m_vertices[vertexIndex + 1].position = { Xvalues[x + 1][0], Yvalues[y + 0][0], 0.0f };
+			m_vertices[vertexIndex + 1].texCoord = { Xvalues[x + 1][1], Yvalues[y + 0][1] };
+
+			m_vertices[vertexIndex + 2].position = { Xvalues[x + 0][0], Yvalues[y + 1][0], 0.0f };
+			m_vertices[vertexIndex + 2].texCoord = { Xvalues[x + 0][1], Yvalues[y + 1][1] };
+
+			m_vertices[vertexIndex + 3].position = { Xvalues[x + 1][0], Yvalues[y + 1][0], 0.0f };
+			m_vertices[vertexIndex + 3].texCoord = { Xvalues[x + 1][1], Yvalues[y + 1][1] };
+
+			rect++;
+		}
+	}
+}
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -181,42 +208,3 @@ void UIImage::ConfirmShader()
 		ms_imageShader = new TextureShader();
 }
 
-void UIImage::CalculateGeometry()
-{
-	// { position }, { texcoord }
-	float Xvalues[4][2]
-	{
-		{ { m_absolutePosition.X									},	{ 0.0f											} },
-		{ { m_absolutePosition.X + m_borderSize						},	{ 0.0f + m_borderSize / m_texture->GetWidth()	} },
-		{ { m_absolutePosition.X + m_size.Width - m_borderSize		},	{ 1.0f - m_borderSize / m_texture->GetWidth()	} },
-		{ { m_absolutePosition.X + m_size.Width						},	{ 1.0f											} }
-	};
-	float Yvalues[4][2]
-	{
-		{ { m_absolutePosition.Y									},	{ 0.0f											} },
-		{ { m_absolutePosition.Y + m_borderSize						},	{ 0.0f + m_borderSize / m_texture->GetHeight()	} },
-		{ { m_absolutePosition.Y + m_size.Height - m_borderSize		},	{ 1.0f - m_borderSize / m_texture->GetHeight()	} },
-		{ { m_absolutePosition.Y + m_size.Height					},	{ 1.0f											} }
-	};
-
-	int rect = 0;
-	for (int vertexIndex = 0; vertexIndex < m_vertexCount; vertexIndex += 4)
-	{
-		int x = rect % 3;
-		int y = rect / 3;
-
-		m_vertices[vertexIndex + 0].position = { Xvalues[x + 0][0], Yvalues[y + 0][0], 0.0f};
-		m_vertices[vertexIndex + 0].texCoord = { Xvalues[x + 0][1], Yvalues[y + 0][1] };
-
-		m_vertices[vertexIndex + 1].position = { Xvalues[x + 1][0], Yvalues[y + 0][0], 0.0f };
-		m_vertices[vertexIndex + 1].texCoord = { Xvalues[x + 1][1], Yvalues[y + 0][1] };
-
-		m_vertices[vertexIndex + 2].position = { Xvalues[x + 0][0], Yvalues[y + 1][0], 0.0f };
-		m_vertices[vertexIndex + 2].texCoord = { Xvalues[x + 0][1], Yvalues[y + 1][1] };
-
-		m_vertices[vertexIndex + 3].position = { Xvalues[x + 1][0], Yvalues[y + 1][0], 0.0f };
-		m_vertices[vertexIndex + 3].texCoord = { Xvalues[x + 1][1], Yvalues[y + 1][1] };
-
-		rect++;
-	}
-}

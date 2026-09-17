@@ -29,8 +29,8 @@ public:
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
-	void Update();
-	void Render();
+	void Update() override;
+	void Render() override;
 	static void Shutdown();
 
 	// --- VIRTUAL FUNCTIONS ---
@@ -43,7 +43,6 @@ public:
 	void SetSize(Size size) override;
 	void SetSize(float width, float height) override;
 	void SetImage(Texture* texture);
-	void SetBorder(float size);
 
 	// --- STATIC CLASS API ---
 
@@ -53,7 +52,7 @@ protected:
 
 
 	// --- VIRTUAL FUNCTIONS ---
-
+	void CalculateGeometry() override;
 
 	// --- PROTECTED FUNCTIONS ---
 
@@ -65,7 +64,6 @@ private:
 	// --- PRIVATE FUNCTIONS ---
 	void CheckMinimalSize();
 	void ConfirmShader();
-	void CalculateGeometry();
 
 // - PROPERTIES -
 public:
@@ -100,7 +98,6 @@ private:
 
 	// --- PRIVATE COMPONENT DATA ---
 	Texture* m_texture{ nullptr };
-	float m_borderSize{ 0.0f };
 
 	// --- STATIC GLOBAL STATES ---
 	static TextureShader* ms_imageShader;

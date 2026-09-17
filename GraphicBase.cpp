@@ -46,7 +46,7 @@ GraphicBase::~GraphicBase()
 //	return true;
 //}
 
-void GraphicBase::Update()
+void GraphicBase::Update(Color borderColor)
 {
 	if (m_background == BACKGROUND_NONE)
 		return;
@@ -61,12 +61,25 @@ void GraphicBase::Update()
 	}
 
 	SPCVertex* vertices = (SPCVertex*)mappedResource.pData;
-	for (int i = 0; i < m_vertexCount; i++)
+	if (m_background == BackgroundType::BACKGROUND_BORDER && m_vertexCount == 36)
 	{
-		vertices[i].position = m_vertices[i].position;
-		vertices[i].color = TColor(m_backgroundColor.r, m_backgroundColor.g, m_backgroundColor.b, m_backgroundColor.a);
+		for (int i = 0; i < m_vertexCount; i++)
+		{
+			vertices[i].position = m_vertices[i].position;
+			if (i >= 16 && i <= 19)
+				vertices[i].color = TColor(m_backgroundColor.r, m_backgroundColor.g, m_backgroundColor.b, m_backgroundColor.a);
+			else
+				vertices[i].color = TColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a);
+		}
 	}
-
+	else
+	{
+		for (int i = 0; i < m_vertexCount; i++)
+		{
+			vertices[i].position = m_vertices[i].position;
+			vertices[i].color = TColor(m_backgroundColor.r, m_backgroundColor.g, m_backgroundColor.b, m_backgroundColor.a);
+		}
+	}
 	DXDEVICECONTEXT->Unmap(m_vertexBufferBackground, 0);
 }
 
@@ -108,9 +121,13 @@ void GraphicBase::Shutdown()
 void GraphicBase::SetBackgroundColor(Color color)
 {
 	m_backgroundColor = color;
-	if (color.a == 0.0f)		m_background = BACKGROUND_NONE;
-	else if (color.a == 1.0f)	m_background = BACKGROUND_SOLID;
-	else						m_background = BACKGROUND_TRANSPARENT;
+	if (m_background != BackgroundType::BACKGROUND_BORDER)
+	{
+		if (color.a == 0.0f)
+			m_background = BackgroundType::BACKGROUND_NONE;
+		else
+			m_background = BackgroundType::BACKGROUND_COLOR;
+	}
 	GraphicBase::Update();
 }
 
