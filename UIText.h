@@ -51,6 +51,7 @@ class UIText : public UIElement
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	UIText();
+	UIText(Position position, Size size);
 	UIText(Position position, Size size, Font* font);
 	~UIText();
 

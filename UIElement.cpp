@@ -32,8 +32,6 @@ UIElement::UIElement(Position position, Size size) : UIElement(position, size, {
 
 UIElement::UIElement(Position position, Size size, Color backgroundColor)
 {
-	m_dynamic = true;
-	EnsureVertexMemory(4, 6, 0);
 	SetRect(position, size);
 	SetBackgroundColor(backgroundColor);
 }
@@ -53,28 +51,47 @@ UIElement::~UIElement()
 
 void UIElement::Update()
 {
-	UpdateAbsolutePosition();
+	if (!Visibility)
+		return;
 
 	if (!IsInvalidated())
 		return;
 
-	CalculateGeometry();
-
-	HRESULT result;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	result = DXDEVICECONTEXT->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
+	if (IsInvalidated(UpdateFlag::UPDATE_POSITION))
 	{
-		return;
+		UpdateAbsolutePosition();
+		Validate(UpdateFlag::UPDATE_POSITION);
 	}
-	
-	memcpy((SPDNT2Vertex*)mappedResource.pData, (void*)m_vertices, VERTEXSTRUCTSIZE * m_vertexCount);
-		
-	DXDEVICECONTEXT->Unmap(m_vertexBuffer, 0);
 
-	(m_borderSize == 0.0f) ? GraphicBase::Update() : GraphicBase::Update(m_backgroundBorderColor);
-	//GraphicBase::Update();
-	Validate();
+	if (IsInvalidated(UpdateFlag::UPDATE_BACKGROUND_STATE))
+	{
+		CheckBackgroundType();
+		LoadBackgroundBuffer();
+
+		if (m_background != BackgroundType::BACKGROUND_NONE)
+		{
+			Invalidate(UpdateFlag::UPDATE_GEOMETRY);
+			Invalidate(UpdateFlag::UPDATE_COLORS);
+		}
+
+		Validate(UpdateFlag::UPDATE_BACKGROUND_STATE);
+	}
+
+	if (IsInvalidated(UpdateFlag::UPDATE_GEOMETRY))
+	{
+		CalculateGeometry();
+		UpdateBufferData(m_vertexBuffer, m_vertices, m_vertexSize * m_vertexCount);
+		GraphicBase::UpdateGeometry();
+		Validate(UpdateFlag::UPDATE_GEOMETRY);
+	}
+
+	if (IsInvalidated(UpdateFlag::UPDATE_COLORS))
+	{
+		GraphicBase::UpdateColors(m_backgroundBorderColor);
+		Validate(UpdateFlag::UPDATE_COLORS);
+	}
+
+	GraphicBase::Update();
 }
 
 void UIElement::Render()
@@ -98,14 +115,13 @@ void UIElement::Render()
 void UIElement::SetPosition(Position position)
 {
 	m_localPosition = position;
-	UpdateAbsolutePosition();
-	Invalidate();
+	Invalidate(UpdateFlag::UPDATE_POSITION);
 }
+
 void UIElement::SetPosition(float x, float y)
 {
 	m_localPosition = { x, y };
-	UpdateAbsolutePosition();
-	Invalidate();
+	Invalidate(UpdateFlag::UPDATE_POSITION);
 }
 
 void UIElement::SetBackgroundBorderColor(Color color)
@@ -113,7 +129,7 @@ void UIElement::SetBackgroundBorderColor(Color color)
 	if (m_backgroundBorderColor == color)
 		return;
 	m_backgroundBorderColor = color;
-	GraphicBase::Update(m_backgroundBorderColor);
+	Invalidate(UpdateFlag::UPDATE_COLORS);
 }
 
 void UIElement::SetBorderSize(float size)
@@ -123,9 +139,10 @@ void UIElement::SetBorderSize(float size)
 	if (m_borderSize == size)
 		return;
 	m_borderSize = size;
-	(m_borderSize == 0.0f) ? EnsureVertexMemory(4, 6, 0) : EnsureVertexMemory(36, 54, 0);
-	CheckBackgroundType();
-	Invalidate();
+	(m_borderSize == 0.0f) ? EnsureVertexMemory(0, 4, 6, 0) : EnsureVertexMemory(0, 36, 54, 0);
+	Invalidate(UpdateFlag::UPDATE_BACKGROUND_STATE);
+	Invalidate(UpdateFlag::UPDATE_GEOMETRY);
+	Invalidate(UpdateFlag::UPDATE_COLORS);
 }
 
 void UIElement::SetZIndex(int index)
@@ -145,7 +162,7 @@ void UIElement::SetZIndex(int index)
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	PROTECTED VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-bool UIElement::CheckMouseOver() const
+bool UIElement::IsMouseOver() const
 {
 	if (!Visibility)
 		return false;
@@ -163,6 +180,13 @@ bool UIElement::CheckMouseOver() const
 
 void UIElement::CalculateGeometry()
 {
+	uint8_t* vertices = (uint8_t*)m_vertices;
+
+	auto GetPositionPtr = [&](unsigned int index) -> TPosition* {
+		return (TPosition*)(vertices + (index * m_vertexSize));
+		};
+
+
 	if (m_borderSize == 0.0f)
 	{
 		float left = floorf(m_absolutePosition.X);
@@ -170,10 +194,10 @@ void UIElement::CalculateGeometry()
 		float top = floorf(m_absolutePosition.Y);
 		float bottom = floorf(m_absolutePosition.Y + m_size.Height);
 
-		m_vertices[0].position = TPosition{ left, top, 0.0f };
-		m_vertices[1].position = TPosition{ right, top, 0.0f };
-		m_vertices[2].position = TPosition{ left, bottom, 0.0f };
-		m_vertices[3].position = TPosition{ right, bottom, 0.0f };
+		*GetPositionPtr(0) = TPosition{ left, top, 0.0f };
+		*GetPositionPtr(1) = TPosition{ right, top, 0.0f };
+		*GetPositionPtr(2) = TPosition{ left, bottom, 0.0f };
+		*GetPositionPtr(3) = TPosition{ right, bottom, 0.0f };
 	}
 	else
 	{
@@ -199,37 +223,14 @@ void UIElement::CalculateGeometry()
 			int x = rect % 3;
 			int y = rect / 3;
 
-			m_vertices[vertexIndex + 0].position = { Xvalues[x + 0], Yvalues[y + 0], 0.0f };
-			m_vertices[vertexIndex + 1].position = { Xvalues[x + 1], Yvalues[y + 0], 0.0f };
-			m_vertices[vertexIndex + 2].position = { Xvalues[x + 0], Yvalues[y + 1], 0.0f };
-			m_vertices[vertexIndex + 3].position = { Xvalues[x + 1], Yvalues[y + 1], 0.0f };
+			*GetPositionPtr(vertexIndex + 0) = { Xvalues[x + 0], Yvalues[y + 0], 0.0f };
+			*GetPositionPtr(vertexIndex + 1) = { Xvalues[x + 1], Yvalues[y + 0], 0.0f };
+			*GetPositionPtr(vertexIndex + 2) = { Xvalues[x + 0], Yvalues[y + 1], 0.0f };
+			*GetPositionPtr(vertexIndex + 3) = { Xvalues[x + 1], Yvalues[y + 1], 0.0f };
 
 			rect++;
 		}
 	}
-}
-
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	PROTECTED FUNCTIONS										//
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void UIElement::SetRect(float posX, float posY, float sizeX, float sizeY)
-{
-	SetRect({ posX, posY }, { sizeX, sizeY });
-}
-
-void UIElement::SetRect(Position position, Size size)
-{
-	m_localPosition = position;
-	m_size = size;
-	UpdateAbsolutePosition();
-	Invalidate();
-}
-
-void UIElement::SetParent(UIElement* element)
-{
-	m_parent = element;
-	UpdateAbsolutePosition();
-	Invalidate();
 }
 
 void UIElement::UpdateAbsolutePosition()
@@ -245,48 +246,97 @@ void UIElement::UpdateAbsolutePosition()
 	if (absolutePosition.X != m_absolutePosition.X || absolutePosition.Y != m_absolutePosition.Y)
 	{
 		m_absolutePosition = absolutePosition;
-		Invalidate();
+		Invalidate(UpdateFlag::UPDATE_GEOMETRY);
 	}
 }
 
-void UIElement::EnsureVertexMemory(unsigned int vertexCount, unsigned int indexCount, unsigned int reserveCount)
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+void UIElement::SetRect(float posX, float posY, float sizeX, float sizeY)
 {
-	if (m_vertices == nullptr || vertexCount > m_vertexCapacity || indexCount > m_indexCapacity)
+	SetRect({ posX, posY }, { sizeX, sizeY });
+}
+
+void UIElement::SetRect(Position position, Size size)
+{
+	m_localPosition = position;
+	m_size = size;
+	Invalidate(UpdateFlag::UPDATE_POSITION);
+}
+
+void UIElement::SetParent(UIElement* element)
+{
+	m_parent = element;
+	Invalidate(UpdateFlag::UPDATE_POSITION);
+}
+
+void UIElement::EnsureVertexMemory(unsigned int vertexSize, unsigned int vertexCount, unsigned int indexCount, unsigned int reserveCount)
+{
+	unsigned int activeVertexSize = (vertexSize == 0) ? m_vertexSize : vertexSize;
+	if (m_vertices != nullptr && m_vertexCapacity > vertexCount && m_indexCapacity > indexCount && m_vertexSize == activeVertexSize)
+		return;
+
+	m_dynamic = true;
+
+	uint8_t* vertices = (uint8_t*)m_vertices;
+	SAFE_DELETE_ARRAY(vertices);
+	SAFE_DELETE_ARRAY(m_indices);
+
+	m_vertexSize = activeVertexSize;
+	m_vertexCapacity = vertexCount + reserveCount * 4;
+	m_indexCapacity = indexCount + reserveCount * 6;
+
+	unsigned int byteSize = m_vertexCapacity * activeVertexSize;
+	m_vertices = (void*)new uint8_t[byteSize];
+	memset(m_vertices, 0, byteSize);
+	m_indices = new unsigned int[m_indexCapacity];
+
+	if (m_vertexBufferBackground != nullptr)
 	{
-		SAFE_DELETE_ARRAY(m_vertices);
-		SAFE_DELETE_ARRAY(m_indices);
-
-		m_vertexCapacity = vertexCount + reserveCount * 4;
-		m_indexCapacity = indexCount + reserveCount * 6;
-		m_vertices = new SPDNT2Vertex[m_vertexCapacity];
-		m_indices = new unsigned long[m_indexCapacity];
-
-		for (unsigned long i = 0; i < m_indexCapacity; i += 6)
-		{
-			unsigned long rect = (i / 6) * 4;
-			m_indices[i + 0] = rect + 0;
-			m_indices[i + 1] = rect + 1;
-			m_indices[i + 2] = rect + 2;
-			m_indices[i + 3] = rect + 3;
-			m_indices[i + 4] = rect + 2;
-			m_indices[i + 5] = rect + 1;
-		}
-
-		m_vertexCount = vertexCount;
-		m_indexCount = indexCount;
-
-		LoadBuffers();
+		SAFE_DELETE_ARRAY(m_verticesBackground);
+		SAFE_RELEASE(m_vertexBufferBackground);
+		m_verticesBackground = new SPCVertex[m_vertexCapacity];
 	}
+
+	for (unsigned int i = 0; i < m_indexCapacity; i += 6)
+	{
+		unsigned int rect = (i / 6) * 4;
+		m_indices[i + 0] = rect + 0;
+		m_indices[i + 1] = rect + 1;
+		m_indices[i + 2] = rect + 2;
+		m_indices[i + 3] = rect + 3;
+		m_indices[i + 4] = rect + 2;
+		m_indices[i + 5] = rect + 1;
+	}
+
+	m_vertexCount = vertexCount;
+	m_indexCount = indexCount;
+
+	LoadBuffers();
 }
 
 void UIElement::CheckBackgroundType()
 {
-	if (m_backgroundColor.a == 0.0f)
-		m_background = BackgroundType::BACKGROUND_NONE;
-	else if (m_borderSize == 0.0f)
-		m_background = BackgroundType::BACKGROUND_COLOR;
-	else
+	if (m_borderSize == 0.0f)
+	{
+		if (m_backgroundColor.a == 0.0f)
+		{
+			m_background = BackgroundType::BACKGROUND_NONE;
+		}
+		else
+		{
+			m_background = BackgroundType::BACKGROUND_COLOR;
+		}
+	}
+	else if (m_backgroundColor.a > 0.0f)
+	{
 		m_background = BackgroundType::BACKGROUND_BORDER;
+	}
+	else
+	{
+		m_background = BackgroundType::BACKGROUND_BORDER_ONLY;
+	}
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //

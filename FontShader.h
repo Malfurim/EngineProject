@@ -45,7 +45,7 @@ protected:
 
 
 	// --- VIRTUAL FUNCTIONS ---
-
+	bool InitializeLayout(ID3D10Blob* vertexShaderBuffer) override;
 
 	// --- PROTECTED FUNCTIONS ---
 

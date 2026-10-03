@@ -12,6 +12,7 @@
 #include "UIPanel.h"
 #include "UIImage.h"
 #include "UIText.h"
+#include "UIButton.h"
 
 #include "Deleters.h"
 #include "Utils.h"
@@ -76,26 +77,49 @@ bool Application::Initialize()
 
 	UIText* t1 = new UIText({ 0, 0 }, { 480, 270 }, RESOURCE->GetFont(L"font01"));
 	t1->SetFontSize(20.0f);
-	t1->SetMaxLength(128);
+	//t1->SetMaxLength(128);
 	t1->SetText(L"My first test\nof TEXT rendering\non multiple lines\nand centered in both\nhorizontal and vertical\npositions...");
 	t1->SetFontColor({ 0.0, 0.8f, 0.0f, 1.0f });
 	t1->SetCursorColor({ 1.0, 1.0f, 1.0f, 1.0f });
 	t1->SetTextAlignment(HORIZONTAL_TEXT_ALIGNMENT_CENTER, VERTICAL_TEXT_ALIGNMENT_MIDDLE);
 	t1->SetTextProperties(TEXT_PROPERTY_EDITABLE | TEXT_PROPERTY_MULTILINE);
 
+	//p1->SetBackgroundColor({ 0.0f, 0.0f, 0.0f, 0.0f });
 	p1->SetBackgroundBorderColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	p1->SetBorderSize(2.0f);
 	p1->AddChild(t1);
 
-	UIImage* i1 = new UIImage({ 800, 100 }, { 128, 128 });
-	i1->SetImage(RESOURCE->GetTexture(L"silt"));
-	i1->SetBorderSize(4.0f);
-	m_userInterface->AddChild(i1);
+	//UIImage* i1 = new UIImage({ 800, 100 }, { 128, 128 });
+	UIImage* i1 = new UIImage({ 16, 16 }, { 64, 64 });
+	i1->SetImage(RESOURCE->GetTexture(L"dirtAnimated"));
+	i1->EnableAnimation(4, 1, 2);
+	//i1->SetBorderSize(8.0f);
+	//m_userInterface->AddChild(i1);
+	p1->AddChild(i1);
+
+	UIButton* b1 = new UIButton({ 300, 30 }, { 256, 64 });
+	b1->SetBackgroundColor({ 1.0f, 0.0f, 0.0f, 1.0f });
+	b1->SetBorderColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	b1->SetBorderColor({ 1.0f, 1.0f, 1.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
+	b1->SetBorderColor({ 0.5f, 0.5f, 0.5f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
+	b1->SetBorderSize(2.0f);
+	b1->SetBackgroundColor({ 0.0f, 1.0f, 0.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
+	b1->SetBackgroundColor({ 0.0f, 0.0f, 1.0f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
+	b1->SetFont(RESOURCE->GetFont(L"font01"));
+	b1->SetFontSize(20.0f);
+	b1->SetFontColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	b1->EnableRepeatable();
+	m_userInterface->AddChild(b1);
+
+	static int Number{ 0 };
+	b1->OnClick += [](UIButton* sender) { Number++; sender->SetText(STR(Number)); };
+	b1->SetText(STR(Number));
 
 
 	p1 = nullptr;
 	t1 = nullptr;
 	i1 = nullptr;
+	b1 = nullptr;
 
 	m_debug = new UIPanel({ 8, 8 }, { 256, 384 }, { 0.0f, 0.0f, 0.0f, 0.35f });
 	m_userInterface->AddChild(m_debug);
@@ -170,19 +194,29 @@ void Application::Update()
 		{
 			Interactive::SetFocus(element, FocusType::FOCUS_TYPE_UI);
 			element->LeftClick(MOUSEX, MOUSEY);
-			xx = element->GetPositionLeft();
 		}
 		else
 		{
 			Interactive::RemoveFocus(FocusType::FOCUS_TYPE_UI);
-			/*
-			if (GraphicBase::GetFocus() != nullptr)
-			{
-				GraphicBase::GetFocus()->Unfocus();
-			}
-			*/
 		}
 	}
+	
+	if (ISMOUSERELEASED(MouseButton::MOUSE_BUTTON_LEFT))
+	{
+		if (UIButton::IsCaptured())
+		{
+			UIButton::ReleaseCapture();
+		}
+
+		UIElement* element = m_userInterface->GetElementAtPosition(MOUSEX, MOUSEY);
+		if (element != nullptr && element->IsInteractive())
+		{
+			element->LeftRelease(MOUSEX, MOUSEY);
+		}
+	}
+	
+	
+
 
 	XMFLOAT3 camera = m_camera->GetPosition();
 	XMFLOAT3 camRot = m_camera->GetRotation();
@@ -363,7 +397,6 @@ void Application::Update()
 		L"X " + ToWStringWithPrecision(m_camera->GetPosition().x, 3) + L", Y " + ToWStringWithPrecision(m_camera->GetPosition().y, 3) + L", Z " + ToWStringWithPrecision(m_camera->GetPosition().z, 3) + L"\n" +
 		L"Camera Rotation:\n" +
 		L"X " + ToWStringWithPrecision(m_camera->GetRotation().x, 3) + L", Y " + ToWStringWithPrecision(m_camera->GetRotation().y, 3) + L", Z " + ToWStringWithPrecision(m_camera->GetRotation().z, 3) + L"\n" +
-		L"" + ToWStringWithPrecision(xx, 3) + L"\n" +
 		L"InputState: " + std::to_wstring(static_cast<unsigned int>(INP->GetInputState())).c_str();
 
 	m_debugText->SetText(text);

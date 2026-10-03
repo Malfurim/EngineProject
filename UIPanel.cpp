@@ -28,6 +28,7 @@ UIPanel::UIPanel(Position position, Size size) : UIPanel(position, size, { 0, 0,
 
 UIPanel::UIPanel(Position position, Size size, Color backgroundColor) : UIElement(position, size, backgroundColor)
 {
+    EnsureVertexMemory(sizeof(SPVertex), 4, 6, 0);
 }
 
 UIPanel::~UIPanel()
@@ -62,7 +63,7 @@ void UIPanel::Render()
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PUBLIC VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
@@ -115,7 +116,10 @@ bool UIPanel::RemoveChild(int index)
 {
     if (index >= m_children.size() || index < 0)
         return false;
+
+    UIElement* element = m_children[index];
     m_children.erase(m_children.begin() + index);
+    delete element;
     return true;
 }
 
@@ -128,7 +132,7 @@ void UIPanel::SortChildren()
 
 UIElement* UIPanel::GetElementAtPosition(float x, float y)
 {
-    if (!Visibility || !CheckMouseOver())
+    if (!Visibility || !IsMouseOver())
         return nullptr;
 
     for (auto it = m_children.rbegin(); it != m_children.rend(); ++it)
@@ -140,7 +144,7 @@ UIElement* UIPanel::GetElementAtPosition(float x, float y)
         if (!element->Visibility)
             continue;
 
-        if (element->CheckMouseOver())
+        if (element->IsMouseOver())
         {
             UIPanel* elementPanel = dynamic_cast<UIPanel*>(element);
             if (elementPanel != nullptr)
@@ -171,9 +175,16 @@ UIElement* UIPanel::GetChild(int index)
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PROTECTED VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-
+void UIPanel::UpdateAbsolutePosition()
+{
+    UIElement::UpdateAbsolutePosition();
+    for (auto* child : m_children)
+    {
+        child->Invalidate(UpdateFlag::UPDATE_POSITION);
+    }
+}
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	PROTECTED FUNCTIONS										//

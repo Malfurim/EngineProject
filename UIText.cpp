@@ -27,11 +27,19 @@ UIText::UIText() : UIText({ 0, 0 }, { 0, 0 }, nullptr)
 {
 }
 
+UIText::UIText(Position position, Size size) : UIText(position, size, nullptr)
+{
+}
+
 UIText::UIText(Position position, Size size, Font* font) : UIElement(position, size)
 {
     ConfirmShader();
-    SetFont(font);
-    m_fontHeight = font->GetFontHeight();
+    EnsureVertexMemory(sizeof(SPDTVertex), 4, 6, 0);
+    if (font != nullptr)
+    {
+        SetFont(font);
+        m_fontHeight = font->GetFontHeight();
+    }
     SetText(L"");
 }
 
@@ -52,30 +60,28 @@ void UIText::Update()
 {
     if (!Visibility)
         return;
-    UpdateAbsolutePosition();
-
+    
     if (IsFocused())
         CursorBlink();
 
     if (!IsInvalidated())
         return;
 
-    ResetBlink();
-    CalculateGeometry();
-
-    HRESULT result;
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    result = DXDEVICECONTEXT->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    if (FAILED(result))
+    if (IsInvalidated(UpdateFlag::UPDATE_GEOMETRY) || IsInvalidated(UpdateFlag::UPDATE_TEXT))
     {
-        return;
+        if (IsInvalidated(UpdateFlag::UPDATE_TEXT))
+        {
+            CalculateTextWidth();
+        }
+
+        ResetBlink();
+        CalculateGeometry();
+        UpdateBufferData(m_vertexBuffer, m_vertices, m_vertexSize * m_vertexCount);
+        Validate(UpdateFlag::UPDATE_GEOMETRY);
+        Validate(UpdateFlag::UPDATE_TEXT);
     }
 
-    memcpy((SPDNT2Vertex*)mappedResource.pData, (void*)m_vertices, VERTEXSTRUCTSIZE * m_vertexCount);
-    DXDEVICECONTEXT->Unmap(m_vertexBuffer, 0);
-
-    GraphicBase::Update();
-    Validate();
+    UIElement::Update();
 }
 
 void UIText::Render()
@@ -87,7 +93,7 @@ void UIText::Render()
     if (m_font == nullptr)
         return;
 
-    unsigned int stride = VERTEXSTRUCTSIZE;
+    unsigned int stride = m_vertexSize;
     unsigned int offset = 0;
 
     DXDEVICECONTEXT->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
@@ -121,7 +127,7 @@ void UIText::OnCharInput(wchar_t character)
             m_text.erase(m_cursorIndex - 1, 1);
             m_cursorIndex--;
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         break;
 
@@ -131,7 +137,7 @@ void UIText::OnCharInput(wchar_t character)
             m_text.insert(m_cursorIndex, 1, L'\n');
             m_cursorIndex++;
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         else
         {
@@ -155,7 +161,7 @@ void UIText::OnCharInput(wchar_t character)
             m_text.insert(m_cursorIndex, 1, character);
             m_cursorIndex++;
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         break;
     }
@@ -180,7 +186,7 @@ void UIText::OnKeyDown(wchar_t key)
         {
             m_text.erase(m_cursorIndex, 1);
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         break;
 
@@ -189,7 +195,7 @@ void UIText::OnKeyDown(wchar_t key)
         {
             m_cursorIndex--;
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         break;
 
@@ -198,7 +204,7 @@ void UIText::OnKeyDown(wchar_t key)
         {
             m_cursorIndex++;
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         break;
 
@@ -207,14 +213,14 @@ void UIText::OnKeyDown(wchar_t key)
         {
             m_cursorIndex = 0;
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         else
         {
             m_cursorPosition.Y -= m_fontHeight;
             m_updateCursorPosition = false;
             m_locateCursorIndex = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         break;
 
@@ -223,19 +229,19 @@ void UIText::OnKeyDown(wchar_t key)
         {
             m_cursorIndex = m_text.length();
             m_updateCursorPosition = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         else
         {
             m_cursorPosition.Y += m_fontHeight;
             m_updateCursorPosition = false;
             m_locateCursorIndex = true;
-            Invalidate();
+            Invalidate(UpdateFlag::UPDATE_TEXT);
         }
         break;
     }
 
-    if (IsInvalidated())
+    if (IsInvalidated(UpdateFlag::UPDATE_TEXT))
     {
         if (m_maxLength == 0)
             SetVertexMemory();
@@ -268,14 +274,13 @@ void UIText::SetText(std::wstring text)
 
     if (m_text == text)
         return;
+
     m_text = text;
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
+    Invalidate(UpdateFlag::UPDATE_GEOMETRY);
 
     if (m_maxLength == 0)
         SetVertexMemory();
-
-    CalculateTextWidth();
-    CalculateGeometry();
 }
 
 void UIText::SetFont(Font* font)
@@ -285,7 +290,7 @@ void UIText::SetFont(Font* font)
     m_font = font;
     if (m_fontHeight == 0.0f)
         m_fontHeight = font->GetFontHeight();
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::SetFontSize(float size)
@@ -293,8 +298,7 @@ void UIText::SetFontSize(float size)
     if (m_fontHeight == size)
         return;
     m_fontHeight = size;
-    Invalidate();
-    CalculateTextWidth();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::SetFontColor(Color color)
@@ -302,7 +306,7 @@ void UIText::SetFontColor(Color color)
     if (m_fontColor == color)
         return;
     m_fontColor = color;
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::SetCursorColor(Color color)
@@ -310,7 +314,7 @@ void UIText::SetCursorColor(Color color)
     if (m_cursorColor == color)
         return;
     m_cursorColor = color;
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::SetTextAlignment(HorizontalTextAlignment horizontalTextAlignment)
@@ -329,7 +333,7 @@ void UIText::SetTextAlignment(HorizontalTextAlignment horizontalTextAlignment, V
         return;
     m_horizontalAlign = horizontalTextAlignment;
     m_verticalAlign = verticalTextAlignment;
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::SetTextProperties(unsigned int properties)
@@ -345,7 +349,7 @@ void UIText::SetMaxLength(int length)
 
     m_maxLength = length;
     SetVertexMemory();
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -362,21 +366,24 @@ void UIText::LeftClickInternal(float mouseX, float mouseY)
     m_cursorPosition.Y = mouseY;
     m_updateCursorPosition = true;
     m_locateCursorIndex = true;
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::FocusInternal()
 {
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::FocusLostInternal()
 {
-    Invalidate();
+    Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::CalculateGeometry()
 {
+    if (m_font == nullptr)
+        return;
+
     // Separate text into lines 
     std::vector<std::wstring> lines;
     std::wstringstream textStream(m_text);
@@ -588,21 +595,23 @@ void UIText::SetVertices(unsigned long vertexStartIndex, float left, float top, 
 
 void UIText::SetVertices(unsigned long vertexStartIndex, float left, float top, float width, const CharacterData& data, const Color& color)
 {
-    m_vertices[vertexStartIndex + 0].position = TPosition{ left, top, 0.0f };
-    m_vertices[vertexStartIndex + 0].diffuse = TDiffuse{ color.r, color.g, color.b };
-    m_vertices[vertexStartIndex + 0].texCoord = TTextureCoordinate{ data.left, data.top };
+    SPDTVertex* vertices = (SPDTVertex*)m_vertices;
 
-    m_vertices[vertexStartIndex + 1].position = TPosition{ left + width, top, 0.0f };
-    m_vertices[vertexStartIndex + 1].diffuse = TDiffuse{ color.r, color.g, color.b };
-    m_vertices[vertexStartIndex + 1].texCoord = TTextureCoordinate{ data.right, data.top };
+    vertices[vertexStartIndex + 0].position = TPosition{ left, top, 0.0f };
+    vertices[vertexStartIndex + 0].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 0].texCoord = TTextureCoordinate{ data.left, data.top };
 
-    m_vertices[vertexStartIndex + 2].position = TPosition{ left, top + m_fontHeight, 0.0f };
-    m_vertices[vertexStartIndex + 2].diffuse = TDiffuse{ color.r, color.g, color.b };
-    m_vertices[vertexStartIndex + 2].texCoord = TTextureCoordinate{ data.left, data.bottom };
+    vertices[vertexStartIndex + 1].position = TPosition{ left + width, top, 0.0f };
+    vertices[vertexStartIndex + 1].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 1].texCoord = TTextureCoordinate{ data.right, data.top };
 
-    m_vertices[vertexStartIndex + 3].position = TPosition{ left + width, top + m_fontHeight, 0.0f };
-    m_vertices[vertexStartIndex + 3].diffuse = TDiffuse{ color.r, color.g, color.b };
-    m_vertices[vertexStartIndex + 3].texCoord = TTextureCoordinate{ data.right, data.bottom };
+    vertices[vertexStartIndex + 2].position = TPosition{ left, top + m_fontHeight, 0.0f };
+    vertices[vertexStartIndex + 2].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 2].texCoord = TTextureCoordinate{ data.left, data.bottom };
+
+    vertices[vertexStartIndex + 3].position = TPosition{ left + width, top + m_fontHeight, 0.0f };
+    vertices[vertexStartIndex + 3].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 3].texCoord = TTextureCoordinate{ data.right, data.bottom };
 }
 
 float UIText::GetVerticalStartPosition(size_t lineCount) const
@@ -648,14 +657,14 @@ void UIText::SetVertexMemory()
 {
     if (m_maxLength > 0)
     {
-        EnsureVertexMemory(m_maxLength * 4 + 4, m_maxLength * 6 + 6, 0);    // if max length set, create buffers exactly for the capacity length
+        EnsureVertexMemory(sizeof(SPDTVertex), m_maxLength * 4 + 4, m_maxLength * 6 + 6, 0);    // if max length set, create buffers exactly for the capacity length
     }
     else
     {
         if (HasTextProperty(TextProperty::TEXT_PROPERTY_EDITABLE))
-            EnsureVertexMemory(m_text.length() * 4 + 4, m_text.length() * 6 + 6, 16);   // add 4 vertices and 6 indices to render the cursor
+            EnsureVertexMemory(sizeof(SPDTVertex), m_text.length() * 4 + 4, m_text.length() * 6 + 6, 16);   // add 4 vertices and 6 indices to render the cursor
         else
-            EnsureVertexMemory(m_text.length() * 4, m_text.length() * 6, 16);
+            EnsureVertexMemory(sizeof(SPDTVertex), m_text.length() * 4, m_text.length() * 6, 16);
     }
 }
 

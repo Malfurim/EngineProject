@@ -53,7 +53,7 @@ protected:
 
 
 	// --- VIRTUAL FUNCTIONS ---
-
+	void UpdateAbsolutePosition() override;
 
 	// --- PROTECTED FUNCTIONS ---
 

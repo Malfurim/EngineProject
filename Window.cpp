@@ -3,6 +3,7 @@
 // --- ADDITIONAL INCLUDES ---
 #include <Windowsx.h>
 #include "InputManager.h"
+#include "UIButton.h"
 #include "Interactive.h"
 #include "Settings.h"
 
@@ -286,6 +287,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         hdc = BeginPaint(hwnd, &ps);
         EndPaint(hwnd, &ps);
+        return 0;
+    }
+
+    case WM_ACTIVATE:
+    {
+        if (LOWORD(wParam) == WA_INACTIVE)
+        {
+            UIButton::ReleaseCapture();
+        }
+        return 0;
+    }
+
+    case WM_KILLFOCUS:
+    {
+        UIButton::ReleaseCapture();
         return 0;
     }
 

@@ -64,6 +64,7 @@ struct Size
 class UIElement : public GraphicBase
 {
 	friend class UIPanel;
+	friend class UIButton;
 // - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
@@ -78,8 +79,7 @@ public:
 	
 
 	// --- CLASS API ---
-	void Invalidate() { m_invalidated = true; }
-	bool IsInvalidated() const { return m_invalidated; }
+
 
 	// --- GETTERS & SETTERS ---
 	Position GetPosition() const { return m_localPosition; }
@@ -92,13 +92,13 @@ public:
 	void SetPosition(Position position);
 	void SetPosition(float x, float y);
 	void SetBackgroundBorderColor(Color color);
-	void SetBorderSize(float size);
+	virtual void SetBorderSize(float size);
 
 	Size GetSize() const { return m_size; }
 	float GetWidth() const { return m_size.Width; }
 	float GetHeight() const { return m_size.Height; }
-	virtual void SetSize(Size size) { m_size = size; Invalidate(); }
-	virtual void SetSize(float width, float height) { m_size = { width, height }; Invalidate(); }
+	virtual void SetSize(Size size) { m_size = size; Invalidate(UpdateFlag::UPDATE_GEOMETRY); }
+	virtual void SetSize(float width, float height) { m_size = { width, height }; Invalidate(UpdateFlag::UPDATE_GEOMETRY); }
 
 	void SetZIndex(int index);
 	int GetZIndex() const { return m_zIndex; }
@@ -115,16 +115,15 @@ protected:
 	UIElement(Position position, Size size, Color backgroundColor);
 
 	// --- VIRTUAL FUNCTIONS ---
-	bool CheckMouseOver() const override;
+	bool IsMouseOver() const override;
 	virtual void CalculateGeometry();
+	virtual void UpdateAbsolutePosition();
 
 	// --- PROTECTED FUNCTIONS ---
-	void Validate() { m_invalidated = false; }
 	void SetRect(float posX, float posY, float sizeX, float sizeY);
 	void SetRect(Position position, Size size);
 	void SetParent(UIElement* element);
-	void UpdateAbsolutePosition();
-	void EnsureVertexMemory(unsigned int vertexCount, unsigned int indexCount, unsigned int reserveCount);
+	void EnsureVertexMemory(unsigned int vertexSize, unsigned int vertexCount, unsigned int indexCount, unsigned int reserveCount);
 	void CheckBackgroundType();
 
 private:
@@ -150,7 +149,7 @@ protected:
 
 
 	// --- INTERNAL COMPONENT STATES ---
-	bool m_invalidated{ true };
+
 
 	// --- INTERNAL COMPONENT DATA ---
 	Position m_absolutePosition{ 0.0f, 0.0f };

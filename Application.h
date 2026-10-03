@@ -106,8 +106,6 @@ private:
 	UIPanel* m_debug{ nullptr };
 	UIText* m_debugText{ nullptr };
 
-	float xx{ 0.0f };
-
 	// --- STATIC GLOBAL STATES ---
 	static Application* m_instance;
 };

@@ -170,7 +170,7 @@ void Interactive::RemoveFocus(FocusType type)
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void Interactive::UpdateMouseEvents()
 {
-	bool hover = CheckMouseOver();
+	bool hover = IsMouseOver();
 
 	if (hover && !m_isHover)
 	{

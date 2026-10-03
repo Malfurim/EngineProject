@@ -14,6 +14,7 @@
 #define ISKEYRELEASED(k)    InputManager::Instance()->IsKeyReleased(k)
 #define ISMOUSEDOWN(b)      InputManager::Instance()->IsMouseButtonDown(b)
 #define ISMOUSEPRESSED(b)   InputManager::Instance()->IsMouseButtonPressed(b)
+#define ISMOUSERELEASED(b)	InputManager::Instance()->IsMouseButtonReleased(b)
 #define MOUSEPOSITION		InputManager::Instance()->GetMousePosition()
 #define MOUSEX				InputManager::Instance()->GetMouseX()
 #define MOUSEY				InputManager::Instance()->GetMouseY()

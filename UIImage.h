@@ -37,7 +37,8 @@ public:
 
 
 	// --- CLASS API ---
-
+	void EnableAnimation(unsigned int framesPerRow, unsigned int framesPerColumn, unsigned int framesPerSecond);
+	void DisableAnimation();
 
 	// --- GETTERS & SETTERS ---
 	void SetSize(Size size) override;
@@ -94,10 +95,16 @@ private:
 
 
 	// --- PRIVATE COMPONENT STATES ---
-
+	bool m_animated{ false };
+	int m_currentFrame{ 0 };
 
 	// --- PRIVATE COMPONENT DATA ---
 	Texture* m_texture{ nullptr };
+	unsigned int m_textureFramesPerRow{ 1 };
+	unsigned int m_textureFramesPerColumn{ 1 };
+	unsigned int m_frames{ 1 };
+	double m_frameDelta{ 0.0 };
+	double m_frameInterval{ 0.0 };
 
 	// --- STATIC GLOBAL STATES ---
 	static TextureShader* ms_imageShader;

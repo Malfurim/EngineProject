@@ -85,7 +85,7 @@ protected:
 	virtual void FocusInternal() {}
 	virtual void FocusLostInternal() {}
 
-	virtual bool CheckMouseOver() const = 0;
+	virtual bool IsMouseOver() const = 0;
 	virtual bool CapturesKeyboard() const { return false; }
 
 	// --- PROTECTED FUNCTIONS ---
