@@ -3,10 +3,12 @@
 // --- ADDITIONAL INCLUDES ---
 #include "Window.h"
 #include "DirectXManager.h"
+#include "TimerManager.h"
 #include "Texture.h"
 #include "Model.h"
 #include "Font.h"
 #include "Utils.h"
+#include "Deleters.h"
 
 // --- MACROS & DEFINES ---
 
@@ -18,19 +20,30 @@
 //	STATIC GLOBAL STATES & DATA								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 ResourceManager* ResourceManager::ms_instance = nullptr;
+Texture* ResourceManager::ms_fallbackTexture = nullptr;
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 ResourceManager::ResourceManager()
 {
+	AddStaticDirectory(L"ui/");
+	AddStaticDirectory(L"fonts/");
+
+	ms_fallbackTexture = new Texture();
+	if (!ms_fallbackTexture->Initialize(L"assets/textures/blank.png", L"blank", true))
+	{
+		#ifdef _DEBUG
+		MessageBox(NULL, L"File assets/textures/blank.png doesn't exist", L"ERROR", MB_OK);
+		#endif
+	}
 }
 
 ResourceManager::~ResourceManager()
 {
-	m_textureMap.clear();
-	m_modelMap.clear();
+	ClearCache();
 	ms_instance = nullptr;
+	ms_fallbackTexture = nullptr;
 }
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CORE FUNCTIONS											//
@@ -40,9 +53,29 @@ ResourceManager::~ResourceManager()
 //	return true;
 //}
 
-//void ResourceManager::Update()
-//{
-//}
+void ResourceManager::Update()
+{
+	double delta = DELTA;
+	for (int i = m_unusedTextures.size() - 1; i >= 0; i--)
+	{
+		std::wstring name = m_unusedTextures[i];
+		auto resource = m_dynamicTextureMap.find(name);
+		if (resource == m_dynamicTextureMap.end())
+		{
+			m_unusedTextures.erase(m_unusedTextures.begin() + i);
+			continue;
+		}
+
+		resource->second.timeSinceUnused += delta;
+		if (resource->second.timeSinceUnused >= UNUSED_TEXTURE_LIFETIME)
+		{
+			delete resource->second.texture;
+			resource->second.texture = nullptr;
+			m_dynamicTextureMap.erase(name);
+			m_unusedTextures.erase(m_unusedTextures.begin() + i);
+		}
+	}
+}
 
 //void ResourceManager::Render()
 //{
@@ -56,31 +89,109 @@ ResourceManager::~ResourceManager()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CLASS API												//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void ResourceManager::LoadAssets(const std::wstring& directoryPath)
+void ResourceManager::AddStaticDirectory(const std::wstring& directory)
 {
-	std::wstring basePath = directoryPath;
-	if (!basePath.empty() && (basePath.back() == L'/' || basePath.back() == L'\\'))
+	for (auto dir : m_disabledMipmapDirectories)
 	{
-		basePath.pop_back();
+		if (directory.compare(0, directory.length(), dir) == 0)
+			return;
+	}
+	m_disabledMipmapDirectories.push_back(directory);
+}
+
+void ResourceManager::ReleaseTexture(const std::wstring& name)
+{
+	auto resource = m_dynamicTextureMap.find(name);
+	if (resource == m_dynamicTextureMap.end())
+		return;
+
+	if (resource->second.referenceCount > 0)
+	{
+		resource->second.referenceCount--;
 	}
 
-	ScanDirectory(basePath + L"/textures", &ResourceManager::LoadTexture);
-	ScanDirectory(basePath + L"/ui", &ResourceManager::LoadUITexture);
-	ScanDirectory(basePath + L"/models", &ResourceManager::LoadModel);
-	ScanDirectory(basePath + L"/fonts", &ResourceManager::LoadFont);
+	if (resource->second.referenceCount == 0)
+	{
+		resource->second.timeSinceUnused = 0.0;
+		if (std::find(m_unusedTextures.begin(), m_unusedTextures.end(), resource->second.texture->GetName()) == m_unusedTextures.end())
+		{
+			m_unusedTextures.push_back(resource->second.texture->GetName());
+		}
+	}
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	GETTERS & SETTERS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-Texture* ResourceManager::GetTexture(std::wstring name)
+Texture* ResourceManager::GetTexture(const std::wstring& name, AssetPool poolMode)
 {
-	auto resource = m_textureMap.find(name);
-	if (resource != m_textureMap.end())
+	// Check if the texture is part of static directories
+	bool isStatic = false;
+	if (poolMode == AssetPool::ASSET_AUTOMATIC)
 	{
-		return resource->second;
+		isStatic = CompareStaticDirectories(name);
 	}
-	return nullptr;
+	else
+	{
+		isStatic = (poolMode == ASSET_STATIC);
+	}
+
+	// First try to find if the texture already exists
+	if (isStatic)
+	{
+		auto resource = m_staticTextureMap.find(name);
+		if (resource != m_staticTextureMap.end())
+		{
+			return resource->second;
+		}
+	}
+	else
+	{
+		auto resource = m_dynamicTextureMap.find(name);
+		if (resource != m_dynamicTextureMap.end())
+		{
+			resource->second.referenceCount++;
+			resource->second.timeSinceUnused = 0.0;
+
+			auto index = std::find(m_unusedTextures.begin(), m_unusedTextures.end(), name);
+			if (index != m_unusedTextures.end())
+			{
+				m_unusedTextures.erase(index);
+			}
+
+			return resource->second.texture;
+		}
+	}
+
+	// Second if it isn't found, try to create a new one
+	std::wstring path = L"assets/textures/" + name + TEXTURE_FILE_EXTENSION;
+	Texture* texture = new Texture();
+	if (!texture->Initialize(path, name, !isStatic))
+	{
+		#ifdef _DEBUG
+		MessageBox(NULL, (L"Texture not loaded: " + path).c_str(), L"Path Error", MB_OK);
+		#endif
+		delete texture;
+		texture = nullptr;
+		return ms_fallbackTexture;
+	}
+
+	// Save the texture
+	if (isStatic)
+	{
+		m_staticTextureMap[name] = texture;
+	}
+	else
+	{
+		TextureResource res;
+		res.texture = texture;
+		res.referenceCount = 1;
+		res.timeSinceUnused = 0.0;
+		m_dynamicTextureMap[name] = res;
+	}
+
+	// Return newly created texture
+	return texture;
 }
 
 Model* ResourceManager::GetModel(std::wstring name)
@@ -100,7 +211,21 @@ Font* ResourceManager::GetFont(std::wstring name)
 	{
 		return resource->second;
 	}
-	return nullptr;
+	
+	std::wstring path = L"assets/fonts/" + name + FONT_FILE_EXTENSION;
+	Font* font = new Font();
+	if (!font->Initialize(path, GetTexture(L"fonts/" + name)))
+	{
+		#ifdef _DEBUG
+		MessageBox(NULL, (L"Font not loaded: " + path).c_str(), L"Path Error", MB_OK);
+		#endif
+		delete font;
+		font = nullptr;
+		return nullptr;
+	}
+
+	m_fontMap[name] = font;
+	return font;
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -126,71 +251,6 @@ ResourceManager* ResourceManager::Instance()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	PRIVATE FUNCTIONS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void ResourceManager::ScanDirectory(const std::wstring& directoryPath, void (ResourceManager::*loadFunc)(const std::wstring&))
-{
-	HANDLE dir;
-	WIN32_FIND_DATA fileData;
-
-	if ((dir = FindFirstFile((directoryPath + L"/*").c_str(), &fileData)) == INVALID_HANDLE_VALUE)
-		return; // No files found 
-
-	do
-	{
-		const std::wstring fileName = fileData.cFileName;
-		const std::wstring fullPath = directoryPath + L"/" + fileName;
-		const bool is_directory = ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
-
-		if (fileName[0] == L'.')
-			continue;		// skip "." and ".."
-
-		if (is_directory)	// if it's a directory, scan the sub directory first
-		{
-			
-			ScanDirectory(fullPath, loadFunc);
-		}
-		else				// otherwise load the file
-		{
-			(this->*loadFunc)(fullPath);
-		}
-	} while (FindNextFile(dir, &fileData));
-
-	FindClose(dir);
-}
-
-void ResourceManager::LoadTexture(const std::wstring& path)
-{
-	std::wstring name = GetFilename(path);
-
-	if (m_textureMap.find(name) != m_textureMap.end())
-		return;
-
-	Texture* texture = new Texture();
-	if (!texture->Initialize(path.c_str(), true))
-	{
-		delete texture;
-		texture = nullptr;
-		return;
-	}
-	m_textureMap[name] = texture;
-}
-
-void ResourceManager::LoadUITexture(const std::wstring& path)
-{
-	std::wstring name = GetFilename(path);
-
-	if (m_textureMap.find(name) != m_textureMap.end())
-		return;
-
-	Texture* texture = new Texture();
-	if (!texture->Initialize(path.c_str(), false))
-	{
-		delete texture;
-		texture = nullptr;
-		return;
-	}
-	m_textureMap[name] = texture;
-}
-
 void ResourceManager::LoadModel(const std::wstring& path)
 {
 	std::wstring name = GetFilename(path);
@@ -208,20 +268,45 @@ void ResourceManager::LoadModel(const std::wstring& path)
 	m_modelMap[name] = model;
 }
 
-void ResourceManager::LoadFont(const std::wstring& path)
+void ResourceManager::UnloadAssets()
 {
-	std::wstring name = GetFilename(path);
-
-	if (m_fontMap.find(name) != m_fontMap.end())
-		return;
-	
-	Font* font = new Font();
-	if (!font->Initialize(path, GetTexture(name)))
+	for (auto& resource : m_modelMap)
 	{
-		delete font;
-		font = nullptr;
-		return;
+		SAFE_DELETE(resource.second);
 	}
-	m_fontMap[name] = font;
+	m_modelMap.clear();
+
+	for (auto& resource : m_staticTextureMap)
+	{
+		SAFE_DELETE(resource.second);
+	}
+	m_staticTextureMap.clear();
+
+	for (auto& resource : m_dynamicTextureMap)
+	{
+		SAFE_DELETE(resource.second.texture);
+	}
+	m_dynamicTextureMap.clear();
+}
+
+void ResourceManager::ClearCache()
+{
+	UnloadAssets();
+
+	for (auto& resource : m_fontMap)
+	{
+		SAFE_DELETE(resource.second);
+	}
+	m_fontMap.clear();
+}
+
+bool ResourceManager::CompareStaticDirectories(std::wstring path)
+{
+	for (auto dir : m_disabledMipmapDirectories)
+	{
+		if (path.compare(0, dir.length(), dir) == 0)
+			return true;
+	}
+	return false;
 }
 

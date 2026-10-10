@@ -55,7 +55,7 @@ Application::Application(const Application& app)
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Application::Initialize()
 {
-	RESOURCE->LoadAssets();
+	//RESOURCE->LoadAssets();
 	
 	m_camera = new Camera();
 	m_camera->SetPosition(CAMERA_START_POSITION_X, CAMERA_START_POSITION_Y, CAMERA_START_POSITION_Z);
@@ -74,7 +74,7 @@ bool Application::Initialize()
 	
 	UIPanel* p1 = new UIPanel({ 560, 315 }, { 480, 270 }, { 0.5f, 0.0f, 0.0f, 1.0f });
 	m_userInterface->AddChild(p1);
-
+	
 	UIText* t1 = new UIText({ 0, 0 }, { 480, 270 }, RESOURCE->GetFont(L"font01"));
 	t1->SetFontSize(20.0f);
 	//t1->SetMaxLength(128);
@@ -83,20 +83,20 @@ bool Application::Initialize()
 	t1->SetCursorColor({ 1.0, 1.0f, 1.0f, 1.0f });
 	t1->SetTextAlignment(HORIZONTAL_TEXT_ALIGNMENT_CENTER, VERTICAL_TEXT_ALIGNMENT_MIDDLE);
 	t1->SetTextProperties(TEXT_PROPERTY_EDITABLE | TEXT_PROPERTY_MULTILINE);
-
+	
 	//p1->SetBackgroundColor({ 0.0f, 0.0f, 0.0f, 0.0f });
 	p1->SetBackgroundBorderColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	p1->SetBorderSize(2.0f);
 	p1->AddChild(t1);
-
+	
 	//UIImage* i1 = new UIImage({ 800, 100 }, { 128, 128 });
 	UIImage* i1 = new UIImage({ 16, 16 }, { 64, 64 });
-	i1->SetImage(RESOURCE->GetTexture(L"dirtAnimated"));
+	i1->SetImage(RESOURCE->GetTexture(L"ui/dirtAnimated"));
 	i1->EnableAnimation(4, 1, 2);
 	//i1->SetBorderSize(8.0f);
 	//m_userInterface->AddChild(i1);
 	p1->AddChild(i1);
-
+	
 	UIButton* b1 = new UIButton({ 300, 30 }, { 256, 64 });
 	b1->SetBackgroundColor({ 1.0f, 0.0f, 0.0f, 1.0f });
 	b1->SetBorderColor({ 0.0f, 0.0f, 0.0f, 1.0f });
@@ -111,8 +111,37 @@ bool Application::Initialize()
 	b1->EnableRepeatable();
 	m_userInterface->AddChild(b1);
 
+	m_testIMG = new UIImage({ 16, 616 }, { 64, 64 });
+	m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/loam", AssetPool::ASSET_DYNAMIC));
+	m_userInterface->AddChild(m_testIMG);
+
 	static int Number{ 0 };
-	b1->OnClick += [](UIButton* sender) { Number++; sender->SetText(STR(Number)); };
+	//b1->OnClick += [](UIButton* sender) { Number++; sender->SetText(STR(Number)); };
+	b1->OnClick += [&](UIButton* sender) {
+		switch (Number)
+		{
+		case 0:
+			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/sandy_loam", AssetPool::ASSET_DYNAMIC));
+			sender->SetText(STR(Number));
+			Number++;
+			return;
+		case 1:
+			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/silt", AssetPool::ASSET_DYNAMIC));
+			sender->SetText(STR(Number));
+			Number++;
+			return;
+		case 2:
+			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/silty_loam", AssetPool::ASSET_DYNAMIC));
+			sender->SetText(STR(Number));
+			Number++;
+			return;
+		case 3:
+			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/loam", AssetPool::ASSET_DYNAMIC));
+			sender->SetText(STR(Number));
+			Number = 0;
+			return;
+		}
+		};
 	b1->SetText(STR(Number));
 
 
@@ -121,6 +150,7 @@ bool Application::Initialize()
 	i1 = nullptr;
 	b1 = nullptr;
 
+	
 	m_debug = new UIPanel({ 8, 8 }, { 256, 384 }, { 0.0f, 0.0f, 0.0f, 0.35f });
 	m_userInterface->AddChild(m_debug);
 	m_debugText = new UIText({ 4, 4 }, { m_debug->GetWidth() - 8, m_debug->GetHeight() - 8 }, RESOURCE->GetFont(L"font01"));
@@ -128,6 +158,14 @@ bool Application::Initialize()
 	m_debugText->SetFontSize(16.0f);
 	m_debug->AddChild(m_debugText);
 
+
+	m_textureList = new UIPanel({ 1180, 20 }, { 400, 600 }, { 0.0f, 0.0f, 0.0f, 0.35f });
+	m_userInterface->AddChild(m_textureList);
+	m_textureListText = new UIText({ 4, 4 }, { 392, 592 }, RESOURCE->GetFont(L"font01"));
+	m_textureListText->SetFontColor({ 1.0, 1.0f, 1.0f, 1.0f });
+	m_textureListText->SetFontSize(20.0f);
+	m_textureList->AddChild(m_textureListText);
+	
 	return true;
 }
 
@@ -402,6 +440,25 @@ void Application::Update()
 	m_debugText->SetText(text);
 
 	m_userInterface->Update();
+	RESOURCEUPDATE;
+
+	std::wstring textureText = L"--- STATIC TEXTURES ---\n";
+	for (auto& texture : RESOURCE->GetStaticTextureMap())
+	{
+		textureText += texture.first + L"\n";
+	}
+	textureText += L"\n--- DYNAMIC TEXTURES ---\n";
+	for (auto& texture : RESOURCE->GetDynamicTextureMap())
+	{
+		textureText += texture.first + L" (Ref: " + std::to_wstring(texture.second.referenceCount) +
+			L", Time: " + ToWStringWithPrecision(texture.second.timeSinceUnused, 1) + L"s)\n";
+	}
+	textureText += L"\n--- UNUSED TEXTURES ---\n";
+	for (auto& texture : RESOURCE->GetUnusedTexturesVector())
+	{
+		textureText += texture + L"\n";
+	}
+	m_textureListText->SetText(textureText);
 }
 
 void Application::Render()

@@ -16,6 +16,7 @@
 class Camera;
 class UIPanel;
 class UIText;
+class UIImage;
 using namespace DirectX;
 
 class Application
@@ -105,6 +106,11 @@ private:
 	UIPanel* m_userInterface{ nullptr };
 	UIPanel* m_debug{ nullptr };
 	UIText* m_debugText{ nullptr };
+
+	UIPanel* m_textureList{ nullptr };
+	UIText* m_textureListText{ nullptr };
+
+	UIImage* m_testIMG{ nullptr };
 
 	// --- STATIC GLOBAL STATES ---
 	static Application* m_instance;

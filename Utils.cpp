@@ -70,3 +70,10 @@ std::wstring ToWStringWithPrecision(float value, int precision)
 	stream << std::fixed << std::setprecision(precision) << value;
 	return stream.str();
 }
+
+std::wstring GetFileExtention(const std::wstring& file)
+{
+	std::wstring extension = file.substr(file.find_last_of(L".") + 1);
+	for (int i = 0; i < extension.length(); i++) extension[i] = std::tolower(extension[i]);
+	return extension;
+}

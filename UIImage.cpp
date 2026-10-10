@@ -3,6 +3,7 @@
 // --- ADDITIONAL INCLUDES ---
 #include "DirectXManager.h"
 #include "TextureShader.h"
+#include "ResourceManager.h"
 #include "Texture.h"
 #include "TimerManager.h"
 #include "Deleters.h"
@@ -37,6 +38,10 @@ UIImage::UIImage(Position position, Size size, Color backgroundColor) : UIElemen
 
 UIImage::~UIImage()
 {
+	if (m_texture != nullptr)
+	{
+		TEXTURERELEASE(m_texture->GetName());
+	}
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -133,14 +138,14 @@ void UIImage::DisableAnimation()
 void UIImage::SetSize(Size size)
 {
 	m_size = size;
-	Invalidate();
+	Invalidate(UpdateFlag::UPDATE_GEOMETRY);
 	CheckMinimalSize();
 }
 
 void UIImage::SetSize(float width, float height)
 {
 	m_size = { width, height };
-	Invalidate();
+	Invalidate(UpdateFlag::UPDATE_GEOMETRY);
 	CheckMinimalSize();
 }
 
@@ -148,8 +153,12 @@ void UIImage::SetImage(Texture* texture)
 {
 	if (texture != nullptr)
 	{
+		if (m_texture != nullptr)
+		{
+			TEXTURERELEASE(m_texture->GetName());
+		}
 		m_texture = texture;
-		Invalidate();
+		Invalidate(UpdateFlag::UPDATE_GEOMETRY);
 	}
 }
 
