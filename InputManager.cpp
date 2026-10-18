@@ -51,6 +51,9 @@ void InputManager::Update()
 		m_prevKeys[i] = m_keys[i];
 	for (unsigned int i = 0; i < MAX_BUTTONS; i++)
 		m_prevMouse[i] = m_mouse[i];
+
+	m_mouseDelta = m_mousePosition - m_mousePrevPosition;
+	m_mousePrevPosition = m_mousePosition;
 }
 
 //void InputManager::Render()

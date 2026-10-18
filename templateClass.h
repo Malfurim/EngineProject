@@ -28,7 +28,7 @@ public:
 	// void Update();
 	// void Render();
 
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PUBLIC VIRTUAL FUNCTIONS ---
 
 
 	// --- CLASS API ---
@@ -44,7 +44,7 @@ protected:
 	// --- CONSTRUCTORS ---
 
 
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PROTECTED VIRTUAL FUNCTIONS ---
 
 
 	// --- PROTECTED FUNCTIONS ---

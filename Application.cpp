@@ -8,11 +8,14 @@
 #include "TimerManager.h"
 #include "InputManager.h"
 #include "Camera.h"
+#include "UserInterface.h"
+#include "DebugWindow.h"
 
 #include "UIPanel.h"
 #include "UIImage.h"
 #include "UIText.h"
 #include "UIButton.h"
+#include "UIWindow.h"
 
 #include "Deleters.h"
 #include "Utils.h"
@@ -41,7 +44,6 @@ Application::Application()
 Application::~Application()
 {
 	SAFE_DELETE(m_camera);
-	SAFE_DELETE(m_userInterface);
 	
 	m_renderMatrix = {};
 }
@@ -55,8 +57,6 @@ Application::Application(const Application& app)
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Application::Initialize()
 {
-	//RESOURCE->LoadAssets();
-	
 	m_camera = new Camera();
 	m_camera->SetPosition(CAMERA_START_POSITION_X, CAMERA_START_POSITION_Y, CAMERA_START_POSITION_Z);
 	m_camera->SetRotation(CAMERA_START_ROTATION_X, CAMERA_START_ROTATION_Y, CAMERA_START_ROTATION_Z);
@@ -68,14 +68,11 @@ bool Application::Initialize()
 		XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, SCREEN_NEAR, SCREEN_DEPTH),					// Projection Matrix
 		XMMatrixOrthographicLH((float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, SCREEN_NEAR, SCREEN_DEPTH)	// Ortho Matrix
 	};
-
-	m_userInterface = new UIPanel({0, 0}, {SCREEN_WIDTH, SCREEN_HEIGHT});
-	//m_userInterface->SetBackgroundColor({0.0f, 0.0f, 0.0f, 0.25f});
 	
-	UIPanel* p1 = new UIPanel({ 560, 315 }, { 480, 270 }, { 0.5f, 0.0f, 0.0f, 1.0f });
-	m_userInterface->AddChild(p1);
+	UIWindow* w1 = new UIWindow({ 400, 255 }, { 800, 450 }, L"Main Test Panel", false, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_FULL);
+	UIADD(w1);
 	
-	UIText* t1 = new UIText({ 0, 0 }, { 480, 270 }, RESOURCE->GetFont(L"font01"));
+	UIText* t1 = new UIText({ 0, 0 }, { 800, 450 }, FONT(L"default"));
 	t1->SetFontSize(20.0f);
 	//t1->SetMaxLength(128);
 	t1->SetText(L"My first test\nof TEXT rendering\non multiple lines\nand centered in both\nhorizontal and vertical\npositions...");
@@ -83,37 +80,33 @@ bool Application::Initialize()
 	t1->SetCursorColor({ 1.0, 1.0f, 1.0f, 1.0f });
 	t1->SetTextAlignment(HORIZONTAL_TEXT_ALIGNMENT_CENTER, VERTICAL_TEXT_ALIGNMENT_MIDDLE);
 	t1->SetTextProperties(TEXT_PROPERTY_EDITABLE | TEXT_PROPERTY_MULTILINE);
-	
-	//p1->SetBackgroundColor({ 0.0f, 0.0f, 0.0f, 0.0f });
-	p1->SetBackgroundBorderColor({ 0.0f, 0.0f, 1.0f, 1.0f });
-	p1->SetBorderSize(2.0f);
-	p1->AddChild(t1);
+	w1->AddChild(t1);
 	
 	//UIImage* i1 = new UIImage({ 800, 100 }, { 128, 128 });
-	UIImage* i1 = new UIImage({ 16, 16 }, { 64, 64 });
-	i1->SetImage(RESOURCE->GetTexture(L"ui/dirtAnimated"));
+	UIImage* i1 = new UIImage({ 16, 175 }, { 64, 64 });
+	i1->SetImage(TEXTURE(L"ui/dirtAnimated"));
 	i1->EnableAnimation(4, 1, 2);
 	//i1->SetBorderSize(8.0f);
 	//m_userInterface->AddChild(i1);
-	p1->AddChild(i1);
+	w1->AddChild(i1);
 	
-	UIButton* b1 = new UIButton({ 300, 30 }, { 256, 64 });
-	b1->SetBackgroundColor({ 1.0f, 0.0f, 0.0f, 1.0f });
-	b1->SetBorderColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	b1->SetBorderColor({ 1.0f, 1.0f, 1.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
-	b1->SetBorderColor({ 0.5f, 0.5f, 0.5f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
+	UIButton* b1 = new UIButton({ 96, 16 }, { 192, 64 });
+	b1->SetBackgroundColor({ 0.5f, 0.0f, 0.0f, 1.0f });
+	b1->SetBorderColor({ 0.75f, 0.0f, 0.0f, 1.0f });
+	b1->SetBorderColor({ 0.0f, 0.75f, 0.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
+	b1->SetBorderColor({ 0.0f, 0.0f, 0.75f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
 	b1->SetBorderSize(2.0f);
-	b1->SetBackgroundColor({ 0.0f, 1.0f, 0.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
-	b1->SetBackgroundColor({ 0.0f, 0.0f, 1.0f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
-	b1->SetFont(RESOURCE->GetFont(L"font01"));
+	b1->SetBackgroundColor({ 0.0f, 0.5f, 0.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
+	b1->SetBackgroundColor({ 0.0f, 0.0f, 0.5f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
+	b1->SetFont(FONT(L"default"));
 	b1->SetFontSize(20.0f);
-	b1->SetFontColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	b1->SetFontColor({ 0.8f, 0.8f, 0.8f, 1.0f });
 	b1->EnableRepeatable();
-	m_userInterface->AddChild(b1);
+	w1->AddChild(b1);
 
-	m_testIMG = new UIImage({ 16, 616 }, { 64, 64 });
-	m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/loam", AssetPool::ASSET_DYNAMIC));
-	m_userInterface->AddChild(m_testIMG);
+	m_testIMG = new UIImage({ 16, 16 }, { 64, 64 });
+	m_testIMG->SetImage(TEXTURE2(L"ui/loam", AssetPool::ASSET_DYNAMIC));
+	w1->AddChild(m_testIMG);
 
 	static int Number{ 0 };
 	//b1->OnClick += [](UIButton* sender) { Number++; sender->SetText(STR(Number)); };
@@ -121,22 +114,22 @@ bool Application::Initialize()
 		switch (Number)
 		{
 		case 0:
-			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/sandy_loam", AssetPool::ASSET_DYNAMIC));
+			m_testIMG->SetImage(TEXTURE2(L"ui/sandy_loam", AssetPool::ASSET_DYNAMIC));
 			sender->SetText(STR(Number));
 			Number++;
 			return;
 		case 1:
-			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/silt", AssetPool::ASSET_DYNAMIC));
+			m_testIMG->SetImage(TEXTURE2(L"ui/silt", AssetPool::ASSET_DYNAMIC));
 			sender->SetText(STR(Number));
 			Number++;
 			return;
 		case 2:
-			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/silty_loam", AssetPool::ASSET_DYNAMIC));
+			m_testIMG->SetImage(TEXTURE2(L"ui/silty_loam", AssetPool::ASSET_DYNAMIC));
 			sender->SetText(STR(Number));
 			Number++;
 			return;
 		case 3:
-			m_testIMG->SetImage(RESOURCE->GetTexture(L"ui/loam", AssetPool::ASSET_DYNAMIC));
+			m_testIMG->SetImage(TEXTURE2(L"ui/loam", AssetPool::ASSET_DYNAMIC));
 			sender->SetText(STR(Number));
 			Number = 0;
 			return;
@@ -144,28 +137,27 @@ bool Application::Initialize()
 		};
 	b1->SetText(STR(Number));
 
+	UIWindow* w2 = new UIWindow({ 700, 30 }, {200, 100}, L"Test Window", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIADD(w2);
+	UIWindow* w3 = new UIWindow({ 950, 30 }, { 200, 100 }, L"Test Window 2", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIADD(w3);
+	UIWindow* w4 = new UIWindow({ 700, 150 }, { 200, 100 }, L"Test Window 3 static", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIADD2(w4, WindowType::WINDOW_STATIC);
+	UIWindow* w5 = new UIWindow({ 950, 150 }, { 200, 100 }, L"Test Window 4 front", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIADD2(w5, WindowType::WINDOW_FORCEDFRONT);
 
-	p1 = nullptr;
 	t1 = nullptr;
 	i1 = nullptr;
 	b1 = nullptr;
+	w1 = nullptr;
+	w2 = nullptr;
+	w3 = nullptr;
+	w4 = nullptr;
+	w5 = nullptr;
 
-	
-	m_debug = new UIPanel({ 8, 8 }, { 256, 384 }, { 0.0f, 0.0f, 0.0f, 0.35f });
-	m_userInterface->AddChild(m_debug);
-	m_debugText = new UIText({ 4, 4 }, { m_debug->GetWidth() - 8, m_debug->GetHeight() - 8 }, RESOURCE->GetFont(L"font01"));
-	m_debugText->SetFontColor({ 1.0, 1.0f, 1.0f, 1.0f });
-	m_debugText->SetFontSize(16.0f);
-	m_debug->AddChild(m_debugText);
+	UIADD2(DEBUG, WindowType::WINDOW_FORCEDFRONT);
+	DEBUG->SetGridSize(3, 1);
 
-
-	m_textureList = new UIPanel({ 1180, 20 }, { 400, 600 }, { 0.0f, 0.0f, 0.0f, 0.35f });
-	m_userInterface->AddChild(m_textureList);
-	m_textureListText = new UIText({ 4, 4 }, { 392, 592 }, RESOURCE->GetFont(L"font01"));
-	m_textureListText->SetFontColor({ 1.0, 1.0f, 1.0f, 1.0f });
-	m_textureListText->SetFontSize(20.0f);
-	m_textureList->AddChild(m_textureListText);
-	
 	return true;
 }
 
@@ -216,6 +208,7 @@ void Application::Shutdown()
 	//delete ENTITY;
 	delete INP;
 	delete TIMER;
+	delete UI;
 	delete RESOURCE;
 	delete DXMANAGER;
 	delete WINDOW;
@@ -225,35 +218,20 @@ void Application::Update()
 {
 	float delta = (float)DELTA;
 
+	if (ISKEYPRESSED(VK_F4))
+	{
+		DEBUG->Visibility = !DEBUG->Visibility;
+	}
+
 	if (ISMOUSEPRESSED(MouseButton::MOUSE_BUTTON_LEFT))
 	{
-		UIElement* element = m_userInterface->GetElementAtPosition(MOUSEX, MOUSEY);
-		if (element != nullptr && element->IsInteractive())
-		{
-			Interactive::SetFocus(element, FocusType::FOCUS_TYPE_UI);
-			element->LeftClick(MOUSEX, MOUSEY);
-		}
-		else
-		{
-			Interactive::RemoveFocus(FocusType::FOCUS_TYPE_UI);
-		}
+		UI->MouseEvent(MouseButton::MOUSE_BUTTON_LEFT, InputEventType::INPUT_EVENT_CLICK);
 	}
 	
 	if (ISMOUSERELEASED(MouseButton::MOUSE_BUTTON_LEFT))
 	{
-		if (UIButton::IsCaptured())
-		{
-			UIButton::ReleaseCapture();
-		}
-
-		UIElement* element = m_userInterface->GetElementAtPosition(MOUSEX, MOUSEY);
-		if (element != nullptr && element->IsInteractive())
-		{
-			element->LeftRelease(MOUSEX, MOUSEY);
-		}
+		UI->MouseEvent(MouseButton::MOUSE_BUTTON_LEFT, InputEventType::INPUT_EVENT_RELEASE);
 	}
-	
-	
 
 
 	XMFLOAT3 camera = m_camera->GetPosition();
@@ -368,40 +346,6 @@ void Application::Update()
 			change2 = true;
 		}
 
-		if (ISKEYDOWN('T'))
-		{
-			m_userInterface->GetChild(0)->SetPosition(m_userInterface->GetChild(0)->GetPositionLeft(), m_userInterface->GetChild(0)->GetPositionTop() - speed3);
-		}
-		if (ISKEYDOWN('F'))
-		{
-			m_userInterface->GetChild(0)->SetPosition(m_userInterface->GetChild(0)->GetPositionLeft() - speed3, m_userInterface->GetChild(0)->GetPositionTop());
-		}
-		if (ISKEYDOWN('G'))
-		{
-			m_userInterface->GetChild(0)->SetPosition(m_userInterface->GetChild(0)->GetPositionLeft(), m_userInterface->GetChild(0)->GetPositionTop() + speed3);
-		}
-		if (ISKEYDOWN('H'))
-		{
-			m_userInterface->GetChild(0)->SetPosition(m_userInterface->GetChild(0)->GetPositionLeft() + speed3, m_userInterface->GetChild(0)->GetPositionTop());
-		}
-
-		if (ISKEYDOWN('V'))
-		{
-			m_userInterface->GetChild(0)->SetSize(m_userInterface->GetChild(0)->GetSize().Width - speed3, m_userInterface->GetChild(0)->GetSize().Height);
-		}
-		if (ISKEYDOWN('B'))
-		{
-			m_userInterface->GetChild(0)->SetSize(m_userInterface->GetChild(0)->GetSize().Width + speed3, m_userInterface->GetChild(0)->GetSize().Height);
-		}
-		if (ISKEYDOWN('N'))
-		{
-			m_userInterface->GetChild(0)->SetSize(m_userInterface->GetChild(0)->GetSize().Width, m_userInterface->GetChild(0)->GetSize().Height - speed3);
-		}
-		if (ISKEYDOWN('M'))
-		{
-			m_userInterface->GetChild(0)->SetSize(m_userInterface->GetChild(0)->GetSize().Width, m_userInterface->GetChild(0)->GetSize().Height + speed3);
-		}
-
 		if (ISKEYDOWN('Y'))
 		{
 
@@ -423,13 +367,14 @@ void Application::Update()
 			change2 = true;
 		}
 		*/
+
 		if (change)
 			m_camera->SetPosition(camera.x, camera.y, camera.z);
 		if (change2)
 			m_camera->SetRotation(camRot.x, camRot.y, camRot.z);
 	}
 
-	std::wstring text = L"delta: " + ToWStringWithPrecision(delta, 5) + L"\n" +
+	std::wstring text = L"delta: " + ToWStringWithPrecision(delta, 5) + L"s\n" +
 		L"Mouse: X " + ToWStringWithPrecision(MOUSEPOSITION.X, 0) + L", Y " + ToWStringWithPrecision(MOUSEPOSITION.Y, 0) + L"\n" +
 		L"Camera Position:\n" +
 		L"X " + ToWStringWithPrecision(m_camera->GetPosition().x, 3) + L", Y " + ToWStringWithPrecision(m_camera->GetPosition().y, 3) + L", Z " + ToWStringWithPrecision(m_camera->GetPosition().z, 3) + L"\n" +
@@ -437,28 +382,33 @@ void Application::Update()
 		L"X " + ToWStringWithPrecision(m_camera->GetRotation().x, 3) + L", Y " + ToWStringWithPrecision(m_camera->GetRotation().y, 3) + L", Z " + ToWStringWithPrecision(m_camera->GetRotation().z, 3) + L"\n" +
 		L"InputState: " + std::to_wstring(static_cast<unsigned int>(INP->GetInputState())).c_str();
 
-	m_debugText->SetText(text);
+	DEBUG->SetText(0, 0, text);
 
-	m_userInterface->Update();
+	UI->Update();
 	RESOURCEUPDATE;
 
 	std::wstring textureText = L"--- STATIC TEXTURES ---\n";
 	for (auto& texture : RESOURCE->GetStaticTextureMap())
 	{
-		textureText += texture.first + L"\n";
+		textureText += L"- " + texture.first + L"\n";
 	}
 	textureText += L"\n--- DYNAMIC TEXTURES ---\n";
 	for (auto& texture : RESOURCE->GetDynamicTextureMap())
 	{
-		textureText += texture.first + L" (Ref: " + std::to_wstring(texture.second.referenceCount) +
+		textureText += L"- " + texture.first + L" (Ref: " + std::to_wstring(texture.second.referenceCount) +
 			L", Time: " + ToWStringWithPrecision(texture.second.timeSinceUnused, 1) + L"s)\n";
 	}
 	textureText += L"\n--- UNUSED TEXTURES ---\n";
 	for (auto& texture : RESOURCE->GetUnusedTexturesVector())
 	{
-		textureText += texture + L"\n";
+		textureText += L"- " + texture + L"\n";
 	}
-	m_textureListText->SetText(textureText);
+	textureText += L"\n--- LOADED FONTS ---\n";
+	for (auto& font : RESOURCE->GetFontMap())
+	{
+		textureText += L"- " + font.first + L"\n";
+	}
+	DEBUG->SetText(2, 0, textureText);
 }
 
 void Application::Render()
@@ -492,7 +442,7 @@ void Application::Render()
 	viewMatrix = XMMatrixMultiply(XMMatrixIdentity(), XMMatrixTranslation(0.0f, 0.0f, 1.0f));
 	worldMatrix = XMMatrixIdentity();
 
-	m_userInterface->Render();
+	UI->Render();
 
 	DXMANAGER->EnableBlendState(false);
 	DXMANAGER->EnableZBuffer(true);

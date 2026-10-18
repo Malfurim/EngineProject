@@ -1,0 +1,31 @@
+{
+  "empty": {
+    "BorderSize": 0.0,
+    "TitleBarHeight": 0.0,
+    "CloseButtonSize": 0.0,
+
+    "BackgroundColor": [ 0.0, 0.0, 0.0, 0.0 ],
+    "BorderColor": [ 0.0, 0.0, 0.0, 0.0 ],
+    "TitleBarColor": [ 0.0, 0.0, 0.0, 0.0 ],
+    "FontName": "default",
+
+    "BackgroundTexture": "",
+    "TitleBarTexture": "",
+    "CloseButtonTexture": ""
+  },
+
+  "default": {
+    "BorderSize": 4.0,
+    "TitleBarHeight": 24.0,
+    "CloseButtonSize": 20.0,
+
+    "BackgroundColor": [ 0.15, 0.15, 0.15, 1.0 ],
+    "TitleBarColor": [ 0.2, 0.2, 0.2, 1.0 ],
+    "BorderColor": [ 0.25, 0.25, 0.25, 1.0 ],
+    "FontName": "default",
+
+    "BackgroundTexture": "",
+    "TitleBarTexture": "",
+    "CloseButtonTexture": "ui/close"
+  }
+}

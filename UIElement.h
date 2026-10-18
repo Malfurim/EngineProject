@@ -75,7 +75,7 @@ public:
 	virtual void Update();
 	virtual void Render();
 
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PUBLIC VIRTUAL FUNCTIONS ---
 	
 
 	// --- CLASS API ---
@@ -114,7 +114,7 @@ protected:
 	UIElement(Position position, Size size);
 	UIElement(Position position, Size size, Color backgroundColor);
 
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PROTECTED VIRTUAL FUNCTIONS ---
 	bool IsMouseOver() const override;
 	virtual void CalculateGeometry();
 	virtual void UpdateAbsolutePosition();

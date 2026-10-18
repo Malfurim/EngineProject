@@ -130,6 +130,10 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DebugWindow.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="DirectXManager.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="Font.cpp" />
@@ -148,11 +152,29 @@
     <ClCompile Include="UIImage.cpp" />
     <ClCompile Include="UIPanel.cpp" />
     <ClCompile Include="UIText.cpp" />
+    <ClCompile Include="UIWindow.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="UserInterface.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="DebugWindow.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="UserInterface.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="WindowStyle.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Deleters.h" />
     <ClInclude Include="Event.h" />
@@ -175,6 +197,10 @@
     <ClInclude Include="UIImage.h" />
     <ClInclude Include="UIPanel.h" />
     <ClInclude Include="UIText.h" />
+    <ClInclude Include="UIWindow.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
@@ -182,16 +208,19 @@
     <Text Include="ToDo.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\styles.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\directxtk_desktop_2019.2025.10.28.2\build\native\directxtk_desktop_2019.targets" Condition="Exists('packages\directxtk_desktop_2019.2025.10.28.2\build\native\directxtk_desktop_2019.targets')" />
+    <Import Project="packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets" Condition="Exists('packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('packages\directxtk_desktop_2019.2025.10.28.2\build\native\directxtk_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\directxtk_desktop_2019.2025.10.28.2\build\native\directxtk_desktop_2019.targets'))" />
+    <Error Condition="!Exists('packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets'))" />
   </Target>
 </Project>

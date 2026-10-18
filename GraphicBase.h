@@ -3,6 +3,7 @@
 // --- INCLUDES ---
 #include <DirectXMath.h>
 #include "Interactive.h"
+#include "Color.h"
 
 // --- CONSTANTS ---
 
@@ -34,24 +35,6 @@ enum UpdateFlag : unsigned int
 	UPDATE_BACKGROUND_STATE		= 1 << 4,
 
 	UPDATE_ALL = UPDATE_GEOMETRY | UPDATE_COLORS | UPDATE_TEXT | UPDATE_POSITION | UPDATE_BACKGROUND_STATE
-};
-
-struct Color
-{
-	float r;
-	float g;
-	float b;
-	float a;
-
-	bool operator==(const Color& other) const
-	{
-		return (r == other.r && g == other.g && b == other.b && a == other.a);
-	}
-
-	bool operator!=(const Color& other) const
-	{
-		return !(*this == other);
-	}
 };
 
 struct SPVertex

@@ -7,8 +7,6 @@
 #include "Utils.h"
 #include "TimerManager.h"
 
-#include <Windows.h>
-
 // --- MACROS & DEFINES ---
 
 
@@ -27,7 +25,7 @@ UIButton::UIButton() : UIButton({ 0,0 }, { 0,0 })
 {
 }
 
-UIButton::UIButton(Position position, Size size) : UIElement(position, size)
+UIButton::UIButton(Position position, Size size) : UIPanel(position, size)
 {
 	m_interactive = true;
 	EnsureVertexMemory(sizeof(SPVertex), 4, 6, 0);
@@ -35,9 +33,6 @@ UIButton::UIButton(Position position, Size size) : UIElement(position, size)
 
 UIButton::~UIButton()
 {
-	SAFE_DELETE(m_image);
-	SAFE_DELETE(m_text);
-
 	for (auto* texture : m_texture)
 	{
 		texture = nullptr;
@@ -73,17 +68,13 @@ void UIButton::Update()
 		m_colorChange = false;
 	}
 
-	UIElement::Update();
-
-	if (m_image != nullptr)
+	if (previousState != m_buttonState || m_imageChange)
 	{
-		m_image->Update();
+		m_image->SetImage(m_texture[m_buttonState]);
+		m_imageChange = false;
 	}
 
-	if (m_text != nullptr)
-	{
-		m_text->Update();
-	}
+	UIPanel::Update();
 }
 
 void UIButton::Render()
@@ -91,17 +82,7 @@ void UIButton::Render()
 	if (!Visibility)
 		return;
 
-	UIElement::Render();
-
-	if (m_image != nullptr)
-	{
-		m_image->Render();
-	}
-
-	if (m_text != nullptr)
-	{
-		m_text->Render();
-	}
+	UIPanel::Render();
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -144,15 +125,19 @@ void UIButton::SetMaxLength(int length)
 
 void UIButton::SetImage(Texture* texture)
 {
+	EnsureImageObject();
 	for (auto& stateTexture : m_texture)
 	{
 		stateTexture = texture;
 	}
+	m_imageChange = true;
 }
 
 void UIButton::SetImage(Texture* texture, ButtonState state)
 {
+	EnsureImageObject();
 	m_texture[state] = texture;
+	m_imageChange = true;
 }
 
 void UIButton::SetBackgroundColor(Color color)
@@ -283,7 +268,8 @@ void UIButton::EnsureImageObject()
 
 	m_image = new UIImage({ 0, 0 }, m_size);
 	m_image->SetBorderSize(m_borderSize);
-	m_image->SetParent(this);
+	m_image->SetZIndex(1);
+	AddChild(m_image);
 }
 
 void UIButton::EnsureTextObject()
@@ -293,7 +279,8 @@ void UIButton::EnsureTextObject()
 
 	m_text = new UIText({ m_borderSize, m_borderSize }, m_size - m_borderSize * 2.0f);
 	m_text->SetTextAlignment(HorizontalTextAlignment::HORIZONTAL_TEXT_ALIGNMENT_CENTER, VerticalTextAlignment::VERTICAL_TEXT_ALIGNMENT_MIDDLE);
-	m_text->SetParent(this);
+	m_text->SetZIndex(2);
+	AddChild(m_text);
 }
 
 void UIButton::OnPress()

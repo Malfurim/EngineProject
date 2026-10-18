@@ -103,13 +103,6 @@ private:
 	RenderMatrix m_renderMatrix{};
 	Camera* m_camera{ nullptr };
 
-	UIPanel* m_userInterface{ nullptr };
-	UIPanel* m_debug{ nullptr };
-	UIText* m_debugText{ nullptr };
-
-	UIPanel* m_textureList{ nullptr };
-	UIText* m_textureListText{ nullptr };
-
 	UIImage* m_testIMG{ nullptr };
 
 	// --- STATIC GLOBAL STATES ---

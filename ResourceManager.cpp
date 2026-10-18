@@ -1,6 +1,8 @@
 #include "ResourceManager.h"
 
 // --- ADDITIONAL INCLUDES ---
+#include <nlohmann/json.hpp>
+#include <fstream>
 #include "Window.h"
 #include "DirectXManager.h"
 #include "TimerManager.h"
@@ -21,6 +23,7 @@
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 ResourceManager* ResourceManager::ms_instance = nullptr;
 Texture* ResourceManager::ms_fallbackTexture = nullptr;
+Font* ResourceManager::ms_fallbackFont = nullptr;
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
@@ -37,13 +40,26 @@ ResourceManager::ResourceManager()
 		MessageBox(NULL, L"File assets/textures/blank.png doesn't exist", L"ERROR", MB_OK);
 		#endif
 	}
+
+	ms_fallbackFont = new Font();
+	if (!ms_fallbackFont->Initialize(L"assets/fonts/default.txt", GetTexture(L"fonts/default")))
+	{
+		#ifdef _DEBUG
+		MessageBox(NULL, L"File assets/fonts/default.txt doesn't exist", L"ERROR", MB_OK);
+		#endif
+	}
+
+	LoadWindowStyles();
 }
 
 ResourceManager::~ResourceManager()
 {
 	ClearCache();
 	ms_instance = nullptr;
+	delete ms_fallbackTexture;
 	ms_fallbackTexture = nullptr;
+	delete ms_fallbackFont;
+	ms_fallbackFont = nullptr;
 }
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CORE FUNCTIONS											//
@@ -91,7 +107,7 @@ void ResourceManager::Update()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void ResourceManager::AddStaticDirectory(const std::wstring& directory)
 {
-	for (auto dir : m_disabledMipmapDirectories)
+	for (auto& dir : m_disabledMipmapDirectories)
 	{
 		if (directory.compare(0, directory.length(), dir) == 0)
 			return;
@@ -194,7 +210,7 @@ Texture* ResourceManager::GetTexture(const std::wstring& name, AssetPool poolMod
 	return texture;
 }
 
-Model* ResourceManager::GetModel(std::wstring name)
+Model* ResourceManager::GetModel(const std::wstring& name)
 {
 	auto resource = m_modelMap.find(name);
 	if (resource != m_modelMap.end())
@@ -204,7 +220,7 @@ Model* ResourceManager::GetModel(std::wstring name)
 	return nullptr;
 }
 
-Font* ResourceManager::GetFont(std::wstring name)
+Font* ResourceManager::GetFont(const std::wstring& name)
 {
 	auto resource = m_fontMap.find(name);
 	if (resource != m_fontMap.end())
@@ -221,11 +237,22 @@ Font* ResourceManager::GetFont(std::wstring name)
 		#endif
 		delete font;
 		font = nullptr;
-		return nullptr;
+		return ms_fallbackFont;
 	}
 
 	m_fontMap[name] = font;
 	return font;
+}
+
+const WindowStyle& ResourceManager::GetWindowStyle(const std::wstring& name)
+{
+	auto resource = m_windowStyleMap.find(name);
+	if (resource != m_windowStyleMap.end())
+	{
+		return resource->second;
+	}
+
+	return m_fallbackWindowStyle;
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -268,6 +295,87 @@ void ResourceManager::LoadModel(const std::wstring& path)
 	m_modelMap[name] = model;
 }
 
+void ResourceManager::LoadWindowStyles()
+{
+	std::ifstream file("assets/styles.json");
+	if (!file.is_open())
+	{
+		#ifdef _DEBUG
+		MessageBox(NULL, L"File assets/styles.json doesn't exist", L"ERROR", MB_OK);
+		#endif
+		return;
+	}
+
+	nlohmann::json data;
+	try
+	{
+		file >> data;	// Load method from nlohmann library
+	}
+	catch (const nlohmann::json::parse_error& e)
+	{
+		#ifdef _DEBUG
+		std::string errStr = "Syntax error in JSON: " + std::string(e.what());
+		MessageBoxA(NULL, errStr.c_str(), "JSON Parse Error", MB_OK);
+		#endif
+		file.close();
+		return;
+	}
+	file.close();
+
+	for (auto resource = data.begin(); resource != data.end(); resource++)
+	{
+		std::string name = resource.key();
+		auto& styleData = resource.value();
+
+		WindowStyle style;
+		style.borderSize		= styleData.value("BorderSize", 1.0f);
+		style.titleBarHeight	= styleData.value("TitleBarHeight", 24.0f);
+		style.closeButtonSize	= styleData.value("CloseButtonSize", 20.0f);
+
+		std::string fontStr = styleData.value("FontName", "default");
+		style.titleBarFont = std::wstring(fontStr.begin(), fontStr.end());
+
+		if (styleData.contains("BackgroundTexture"))
+		{
+			std::string textureStr = styleData["BackgroundTexture"];
+			style.backgroundTexture = std::wstring(textureStr.begin(), textureStr.end());
+		}
+
+		if (styleData.contains("TitleBarTexture"))
+		{
+			std::string textureStr = styleData["TitleBarTexture"];
+			style.titleBarTexture = std::wstring(textureStr.begin(), textureStr.end());
+		}
+
+		if (styleData.contains("CloseButtonTexture"))
+		{
+			std::string textureStr = styleData["CloseButtonTexture"];
+			style.closeButtonTexture = std::wstring(textureStr.begin(), textureStr.end());
+		}
+
+		if (styleData.contains("BackgroundColor") && styleData["BackgroundColor"].is_array())
+		{
+			auto& color = styleData["BackgroundColor"];
+			style.backgroundColor = Color{color[0], color[1], color[2], color[3]};
+		}
+
+		if (styleData.contains("TitleBarColor") && styleData["TitleBarColor"].is_array())
+		{
+			auto& color = styleData["TitleBarColor"];
+			style.titleBarColor = Color{ color[0], color[1], color[2], color[3] };
+		}
+
+		if (styleData.contains("BorderColor") && styleData["BorderColor"].is_array())
+		{
+			auto& color = styleData["BorderColor"];
+			style.borderColor = Color{ color[0], color[1], color[2], color[3] };
+		}
+
+		std::wstring wStyleName = std::wstring(name.begin(), name.end());
+		m_windowStyleMap[wStyleName] = style;
+	}
+}
+
 void ResourceManager::UnloadAssets()
 {
 	for (auto& resource : m_modelMap)
@@ -302,7 +410,7 @@ void ResourceManager::ClearCache()
 
 bool ResourceManager::CompareStaticDirectories(std::wstring path)
 {
-	for (auto dir : m_disabledMipmapDirectories)
+	for (auto& dir : m_disabledMipmapDirectories)
 	{
 		if (path.compare(0, dir.length(), dir) == 0)
 			return true;

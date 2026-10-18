@@ -32,7 +32,7 @@ public:
 	// void Update();
 	// void Render();
 	
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PUBLIC VIRTUAL FUNCTIONS ---
 	virtual void OnCharInput(wchar_t character) {}
 	virtual void OnKeyDown(wchar_t key) {}
 	virtual void OnKeyUp(wchar_t key) {}
@@ -69,7 +69,7 @@ protected:
 	// --- CONSTRUCTORS ---
 	Interactive();
 
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PROTECTED VIRTUAL FUNCTIONS ---
 	virtual void LeftClickInternal(float mouseX, float mouseY) {}
 	virtual void RightClickInternal(float mouseX, float mouseY) {}
 	virtual void MiddleClickInternal(float mouseX, float mouseY) {}

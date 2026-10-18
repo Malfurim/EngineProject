@@ -32,13 +32,12 @@ public:
 	void Render() override;
 	
 	// --- VIRTUAL FUNCTIONS ---
-
+	virtual void AddChild(UIElement* element);
+	virtual bool ContainsChild(UIElement* element);
+	virtual bool RemoveChild(UIElement* element);
+	virtual bool RemoveChild(int index);
 
 	// --- CLASS API ---
-	void AddChild(UIElement* element);
-	bool ContainsChild(UIElement* element);
-	bool RemoveChild(UIElement* element);
-	bool RemoveChild(int index);
 	void SortChildren();
 	UIElement* GetElementAtPosition(float x, float y);
 

@@ -65,11 +65,6 @@ void UIPanel::Render()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	PUBLIC VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-
-
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	CLASS API												//
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIPanel::AddChild(UIElement* element)
 {
     if (element == nullptr)
@@ -88,7 +83,7 @@ void UIPanel::AddChild(UIElement* element)
 
     element->SetParent(this);
     m_children.insert(index, element);
-    element->Update();
+    element->Invalidate(UpdateFlag::UPDATE_GEOMETRY);
 }
 
 bool UIPanel::ContainsChild(UIElement* element)
@@ -123,6 +118,9 @@ bool UIPanel::RemoveChild(int index)
     return true;
 }
 
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	CLASS API												//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UIPanel::SortChildren()
 {
     std::sort(m_children.begin(), m_children.end(), [](UIElement* element1, UIElement* element2) {
@@ -138,10 +136,7 @@ UIElement* UIPanel::GetElementAtPosition(float x, float y)
     for (auto it = m_children.rbegin(); it != m_children.rend(); ++it)
     {
         UIElement* element = *it;
-        if (element == nullptr)
-            continue;
-
-        if (!element->Visibility)
+        if (element == nullptr || !element->Visibility)
             continue;
 
         if (element->IsMouseOver())
@@ -150,10 +145,11 @@ UIElement* UIPanel::GetElementAtPosition(float x, float y)
             if (elementPanel != nullptr)
             {
                 UIElement* lowerElement = elementPanel->GetElementAtPosition(x, y);
-                if (lowerElement != nullptr)
+                if (lowerElement != nullptr && lowerElement->IsInteractive())
                     return lowerElement;
             }
-            return element;
+            if (element != nullptr && element->IsInteractive())
+                return element;
         }
     }
     return this;

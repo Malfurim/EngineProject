@@ -3,6 +3,7 @@
 // --- INCLUDES ---
 #include <string>
 #include <unordered_map>
+#include "WindowStyle.h"
 
 // --- CONSTANTS ---
 static const std::wstring TEXTURE_FILE_EXTENSION = L".png";
@@ -14,6 +15,10 @@ static constexpr double UNUSED_TEXTURE_LIFETIME = 300.0;
 #define RESOURCE ResourceManager::Instance()
 #define RESOURCEUPDATE ResourceManager::Instance()->Update()
 #define TEXTURERELEASE(t) ResourceManager::Instance()->ReleaseTexture(t)
+#define TEXTURE(t) ResourceManager::Instance()->GetTexture(t)
+#define TEXTURE2(t, u) ResourceManager::Instance()->GetTexture(t, u)
+#define FONT(t) ResourceManager::Instance()->GetFont(t)
+#define WINDOWSTYLE(t) ResourceManager::Instance()->GetWindowStyle(t)
 
 // --- FORWARD DECLARATIONS ---
 class Texture;
@@ -56,13 +61,15 @@ public:
 
 	// --- GETTERS & SETTERS ---
 	Texture* GetTexture(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
-	Model* GetModel(std::wstring name);
-	Font* GetFont(std::wstring name);
+	Model* GetModel(const std::wstring& name);
+	Font* GetFont(const std::wstring& name);
+	const WindowStyle& GetWindowStyle(const std::wstring& name);
 
 	// TEMPORARY FOR DEBUG
 	const std::unordered_map<std::wstring, Texture*>& GetStaticTextureMap() const { return m_staticTextureMap; }
 	const std::unordered_map<std::wstring, TextureResource>& GetDynamicTextureMap() const { return m_dynamicTextureMap; }
 	const std::vector<std::wstring>& GetUnusedTexturesVector() const { return m_unusedTextures; }
+	const std::unordered_map<std::wstring, Font*>& GetFontMap() const { return m_fontMap; }
 
 	// --- STATIC CLASS API ---
 	static ResourceManager* Instance();
@@ -83,6 +90,7 @@ private:
 
 	// --- PRIVATE FUNCTIONS ---
 	void LoadModel(const std::wstring& path);
+	void LoadWindowStyles();
 
 	void UnloadAssets();
 	void ClearCache();
@@ -120,17 +128,19 @@ private:
 
 
 	// --- PRIVATE COMPONENT DATA ---
-	std::unordered_map<std::wstring, Model*> m_modelMap;
-	std::unordered_map<std::wstring, Font*> m_fontMap;
-
 	std::unordered_map<std::wstring, Texture*> m_staticTextureMap;
 	std::unordered_map<std::wstring, TextureResource> m_dynamicTextureMap;
-
+	std::unordered_map<std::wstring, Font*> m_fontMap;
+	std::unordered_map<std::wstring, Model*> m_modelMap;
+	std::unordered_map<std::wstring, WindowStyle> m_windowStyleMap;
 	std::vector<std::wstring> m_disabledMipmapDirectories;
 	std::vector<std::wstring> m_unusedTextures;
+
+	WindowStyle m_fallbackWindowStyle;
 
 	// --- STATIC GLOBAL STATES ---
 	static ResourceManager* ms_instance;
 	static Texture* ms_fallbackTexture;
+	static Font* ms_fallbackFont;
 };
 

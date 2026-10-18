@@ -203,8 +203,13 @@ void UIImage::CalculateGeometry()
 	}
 	else
 	{
-		float framesWidthPixels = m_texture->GetWidth() * cellWidth;
-		float framesHeightPixels = m_texture->GetHeight() * cellHeight;
+		float framesWidthPixels = 0.0f;
+		float framesHeightPixels = 0.0f;
+		if (m_texture != nullptr)
+		{
+			framesWidthPixels = m_texture->GetWidth() * cellWidth;
+			framesHeightPixels = m_texture->GetHeight() * cellHeight;
+		}
 
 		// { position }, { texcoord }
 		float Xvalues[4][2]

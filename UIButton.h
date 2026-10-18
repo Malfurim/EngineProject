@@ -1,7 +1,7 @@
 #pragma once
 
 // --- INCLUDES ---
-#include "UIElement.h"
+#include "UIPanel.h"
 #include "Event.h"
 #include <string>
 
@@ -26,7 +26,7 @@ class UIText;
 class Font;
 class Texture;
 
-class UIButton : public UIElement
+class UIButton : public UIPanel
 {
 // - INTERFACE -
 public:
@@ -132,6 +132,7 @@ private:
 	ButtonState m_buttonState{ ButtonState::BUTTON_STATE_IDLE };
 	bool m_disabled{ false };
 	bool m_colorChange{ false };
+	bool m_imageChange{ false };
 	bool m_repeatable{ false };
 	double m_pressDelta{ 0.0 };
 	double m_elapsedTime{ 0.0 };

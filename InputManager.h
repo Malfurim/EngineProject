@@ -18,6 +18,7 @@
 #define MOUSEPOSITION		InputManager::Instance()->GetMousePosition()
 #define MOUSEX				InputManager::Instance()->GetMouseX()
 #define MOUSEY				InputManager::Instance()->GetMouseY()
+#define MOUSEDELTA			InputManager::Instance()->GetMouseDelta()
 
 // --- ENUMS & STRUCTS ---
 enum class MouseButton : unsigned int
@@ -35,6 +36,12 @@ enum class InputState
 	INPUT_STATE_MENU,				// Controls limited for keyboard navigation through menus
 	INPUT_STATE_TEXTEDITING,		// Controls disabled for text input until ENTER or ECS pressed
 	INPUT_STATE_CUTSCENE,			// Controls disabled except controls for skipping and such
+};
+
+enum class InputEventType
+{
+	INPUT_EVENT_CLICK,
+	INPUT_EVENT_RELEASE,
 };
 
 // --- FORWARD DECLARATIONS ---
@@ -71,6 +78,8 @@ public:
 
 	void SetMousePosition(Position position) { m_mousePosition = position; }
 	void SetMousePosition(int x, int y) { m_mousePosition = { (float)x, (float)y }; }
+
+	Position GetMouseDelta() const { return { m_mouseDelta.X * m_scaleX, m_mouseDelta.Y * m_scaleY }; }
 
 	InputState GetInputState() { return m_inputState; }
 	void SetInputState(InputState state) { m_inputState = state; }
@@ -147,6 +156,8 @@ private:
 	float m_scaleX{ 1.0f };
 	float m_scaleY{ 1.0f };
 	Position m_mousePosition{ 0, 0 };
+	Position m_mousePrevPosition{ 0, 0 };
+	Position m_mouseDelta{ 0, 0 };
 	InputState m_inputState{ InputState::INPUT_STATE_GAMEPLAY };
 
 	// --- STATIC GLOBAL STATES ---
