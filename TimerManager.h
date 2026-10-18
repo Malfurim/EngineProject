@@ -10,6 +10,8 @@
 #define TIMER TimerManager::Instance()
 #define CALCDELTATIME() TimerManager::Instance()->CalculateDeltaTime()
 #define DELTA TimerManager::Instance()->GetTime()
+#define DELTAUI TimerManager::Instance()->GetTimeUI()
+#define DELTAWORLD TimerManager::Instance()->GetTimeWorld()
 
 // --- ENUMS & STRUCTS ---
 
@@ -37,6 +39,10 @@ public:
 
 	// --- GETTERS & SETTERS ---
 	double GetTime() const { return m_deltaTime; }
+	double GetTimeUI() const { return m_deltaTimeUI; }
+	double GetTimeWorld() const { return m_deltaTimeWorld; }
+	void ResetTimeUI() { m_deltaTimeUI = 0.0; }
+	void ResetTimeWorld() { m_deltaTimeWorld = 0.0; }
 
 	// --- STATIC CLASS API ---
 	static TimerManager* Instance();
@@ -93,6 +99,8 @@ private:
 	double m_frequency{ 0.0 };
 	int64_t m_previousTime{ 0 };
 	double m_deltaTime{ 0.0 };
+	double m_deltaTimeUI{ 0.0 };
+	double m_deltaTimeWorld{ 0.0 };
 
 	// --- STATIC GLOBAL STATES ---
 	static TimerManager* ms_instance;

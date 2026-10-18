@@ -66,6 +66,8 @@ void TimerManager::CalculateDeltaTime()
 	m_previousTime = currentTime;
 	if (m_deltaTime > 0.1)
 		m_deltaTime = 0.1;
+	m_deltaTimeUI += m_deltaTime;
+	m_deltaTimeWorld += m_deltaTime;
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //

@@ -80,6 +80,7 @@ public:
 	void SetMousePosition(int x, int y) { m_mousePosition = { (float)x, (float)y }; }
 
 	Position GetMouseDelta() const { return { m_mouseDelta.X * m_scaleX, m_mouseDelta.Y * m_scaleY }; }
+	void ResetMouseDelta() { m_mouseDelta = { 0.0f, 0.0f }; }
 
 	InputState GetInputState() { return m_inputState; }
 	void SetInputState(InputState state) { m_inputState = state; }

@@ -285,7 +285,7 @@ void UIButton::EnsureTextObject()
 
 void UIButton::OnPress()
 {
-	double delta = DELTA;
+	double delta = DELTAUI;
 	m_elapsedTime += delta;
 
 	if (m_elapsedTime >= PRESS_DELAY)

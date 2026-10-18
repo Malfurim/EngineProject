@@ -15,6 +15,7 @@
 #define DXMANAGER DirectXManager::Instance()
 #define DXDEVICE DirectXManager::Instance()->GetDevice()
 #define DXDEVICECONTEXT DirectXManager::Instance()->GetDeviceContext()
+#define REFRESHRATE DirectXManager::Instance()->GetRefreshRate()
 
 // --- ENUMS & STRUCTS ---
 
@@ -49,10 +50,9 @@ public:
 	// --- GETTERS & SETTERS ---
 	ID3D11Device* GetDevice() const { return m_device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_deviceContext; }
-
 	void GetVideoCardInfo(char* cardName, int& memory);
-
 	void SetBackBufferRenderTarget();
+	double GetRefreshRate() const { return m_refreshRate; }
 
 	// --- STATIC CLASS API ---
 	static DirectXManager* Instance();
@@ -123,6 +123,8 @@ private:
 	//XMMATRIX m_worldMatrix;
 	//XMMATRIX m_orthoMatrix;
 	D3D11_VIEWPORT m_viewport{ NULL };
+
+	double m_refreshRate = 0.0;
 
 	// --- STATIC GLOBAL STATES ---
 	static DirectXManager* ms_instance;

@@ -59,7 +59,7 @@ void UIImage::Update()
 
 	if (m_animated)
 	{
-		m_frameDelta += DELTA;
+		m_frameDelta += DELTAUI;
 		if (m_frameDelta >= m_frameInterval)
 		{
 			m_frameDelta -= m_frameInterval;

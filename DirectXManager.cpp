@@ -116,6 +116,7 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 			{
 				numerator = displayModeList[i].RefreshRate.Numerator;
 				denominator = displayModeList[i].RefreshRate.Denominator;
+				m_refreshRate = 1.0 / ((double)numerator / (double)denominator);
 			}
 		}
 	}
@@ -440,16 +441,19 @@ void DirectXManager::BeginScene(float red, float green, float blue, float alpha)
 void DirectXManager::EndScene()
 {
 	// Present the back buffer to the screen since rendering is complete
-	if (m_vsync_enabled)
-	{
-		// Lock to screen refresh rate
-		m_swapChain->Present(1, 0);
-	}
-	else
-	{
-		// Present as fast as possible
-		m_swapChain->Present(0, 0);
-	}
+	//if (m_vsync_enabled)
+	//{
+	//	// Lock to screen refresh rate
+	//	m_swapChain->Present(1, 0);
+	//}
+	//else
+	//{
+	//	// Present as fast as possible
+	//	m_swapChain->Present(0, 0);
+	//}
+	
+	// Present the back buffer to the screen
+	m_swapChain->Present(0, 0);
 }
 
 

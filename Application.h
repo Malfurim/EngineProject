@@ -31,7 +31,9 @@ public:
 	bool Initialize();
 	void Run();
 	void Shutdown();
-	void Update();
+	void UpdateInput();
+	void UpdateUI();
+	void Update3D();
 	void Render();
 
 	// --- VIRTUAL FUNCTIONS ---
@@ -97,7 +99,8 @@ private:
 	};
 
 	// --- PRIVATE COMPONENT STATES ---
-
+	int m_fps{ 0 };
+	int m_ups{ 0 };
 
 	// --- PRIVATE COMPONENT DATA ---
 	RenderMatrix m_renderMatrix{};

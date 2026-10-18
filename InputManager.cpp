@@ -52,8 +52,9 @@ void InputManager::Update()
 	for (unsigned int i = 0; i < MAX_BUTTONS; i++)
 		m_prevMouse[i] = m_mouse[i];
 
-	m_mouseDelta = m_mousePosition - m_mousePrevPosition;
+	Position mouseDelta = m_mousePosition - m_mousePrevPosition;
 	m_mousePrevPosition = m_mousePosition;
+	m_mouseDelta = { m_mouseDelta.X + mouseDelta.X, m_mouseDelta.Y + mouseDelta.Y };
 }
 
 //void InputManager::Render()

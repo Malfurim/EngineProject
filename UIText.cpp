@@ -670,7 +670,7 @@ void UIText::SetVertexMemory()
 
 void UIText::CursorBlink()
 {
-    m_blinkTimer += DELTA;
+    m_blinkTimer += DELTAUI;
     if (m_blinkTimer >= 0.5)
     {
         m_cursorBlink = !m_cursorBlink;

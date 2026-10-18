@@ -170,11 +170,25 @@ void Application::Run()
 	SetForegroundWindow(WINDOWHWND);
 	SetFocus(WINDOWHWND);
 
+	double updateUIDelta = 0.0;
+	double update3DDelta = 0.0;
+	double renderDelta = 0.0;
+	double secondDelta = 0.0;
+	int fps = 0;
+	int ups = 0;
+	int upsUI = 0;
+	int ups3D = 0;
+
 	// Update loop
 	while (msg.message != WM_QUIT)
 	{
 		INPUTUPDATE();
 		CALCDELTATIME();
+
+		updateUIDelta += DELTA;
+		update3DDelta += DELTA;
+		renderDelta += DELTA;
+		secondDelta += DELTA;
 
 		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
 		{
@@ -188,8 +202,51 @@ void Application::Run()
 			if (ISKEYPRESSED(VK_ESCAPE))
 				PostQuitMessage(0);
 
-			Update();
-			Render();
+			UpdateInput();
+			ups++;
+
+			if (updateUIDelta >= (REFRESHRATE / 4.0))
+			{
+				UpdateUI();
+				INP->ResetMouseDelta();
+				TIMER->ResetTimeUI();
+				upsUI++;
+				updateUIDelta -= (REFRESHRATE / 4.0);
+			}
+
+			if (update3DDelta >= REFRESHRATE)
+			{
+				Update3D();
+				TIMER->ResetTimeWorld();
+				ups3D++;
+				update3DDelta -= REFRESHRATE;
+			}
+
+			if (renderDelta >= REFRESHRATE)
+			{
+				Render();
+				fps++;
+				renderDelta -= REFRESHRATE;
+			}
+
+			if (secondDelta >= 1.0)
+			{
+				m_fps = fps;
+				m_ups = ups;
+
+				DEBUG->SetText(1, 0, L"");
+				DEBUG->AddText(1, 0, L"--- Debug ---");
+				DEBUG->AddText(1, 0, L"\nFPS: " + STR(m_fps));
+				DEBUG->AddText(1, 0, L"\nUI: " + STR(upsUI));
+				DEBUG->AddText(1, 0, L"\n3D: " + STR(ups3D));
+				DEBUG->AddText(1, 0, L"\nUPS: " + STR(m_ups));
+
+				fps = 0;
+				ups = 0;
+				upsUI = 0;
+				ups3D = 0;
+				secondDelta -= 1.0;
+			}
 		}
 	}
 }
@@ -214,10 +271,8 @@ void Application::Shutdown()
 	delete WINDOW;
 }
 
-void Application::Update()
+void Application::UpdateInput()
 {
-	float delta = (float)DELTA;
-
 	if (ISKEYPRESSED(VK_F4))
 	{
 		DEBUG->Visibility = !DEBUG->Visibility;
@@ -227,12 +282,18 @@ void Application::Update()
 	{
 		UI->MouseEvent(MouseButton::MOUSE_BUTTON_LEFT, InputEventType::INPUT_EVENT_CLICK);
 	}
-	
+
 	if (ISMOUSERELEASED(MouseButton::MOUSE_BUTTON_LEFT))
 	{
 		UI->MouseEvent(MouseButton::MOUSE_BUTTON_LEFT, InputEventType::INPUT_EVENT_RELEASE);
 	}
 
+	RESOURCEUPDATE;
+}
+
+void Application::UpdateUI()
+{
+	float delta = (float)DELTAUI;
 
 	XMFLOAT3 camera = m_camera->GetPosition();
 	XMFLOAT3 camRot = m_camera->GetRotation();
@@ -385,7 +446,6 @@ void Application::Update()
 	DEBUG->SetText(0, 0, text);
 
 	UI->Update();
-	RESOURCEUPDATE;
 
 	std::wstring textureText = L"--- STATIC TEXTURES ---\n";
 	for (auto& texture : RESOURCE->GetStaticTextureMap())
@@ -409,6 +469,11 @@ void Application::Update()
 		textureText += L"- " + font.first + L"\n";
 	}
 	DEBUG->SetText(2, 0, textureText);
+}
+
+void Application::Update3D()
+{
+
 }
 
 void Application::Render()
