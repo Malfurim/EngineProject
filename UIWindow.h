@@ -13,7 +13,14 @@
 
 
 // --- ENUMS & STRUCTS ---
-enum WindowDrag
+enum class WindowCloseButton
+{
+	CLOSEBUTTON_NONE,
+	CLOSEBUTTON_CLOSE,
+	CLOSEBUTTON_DESTROY,
+};
+
+enum class WindowDrag
 {
 	DRAG_NONE,
 	DRAG_TITLE,
@@ -31,7 +38,7 @@ class UIWindow : public UIPanel
 // - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
-	UIWindow(Position position, Size size, const std::wstring& titleText, bool hasCloseButton, bool openAtInitialPosition, const WindowStyle& windowStyle, WindowDrag draggable = WindowDrag::DRAG_TITLE);
+	UIWindow(Position position, Size size, const std::wstring& titleText, bool openAtInitialPosition, WindowCloseButton closeButtonType, const WindowStyle& windowStyle, WindowDrag draggable = WindowDrag::DRAG_TITLE);
 	~UIWindow();
 
 	// --- CORE FUNCTIONS ---
@@ -48,6 +55,7 @@ public:
 	// --- CLASS API ---
 	void Open();
 	void Close();
+	void Destroy();
 
 	// --- GETTERS & SETTERS ---
 	Size GetContentSize() const { return m_content->GetSize(); }
@@ -81,10 +89,9 @@ private:
 	// --- PRIVATE FUNCTIONS ---
 	void AddStructureChild(UIElement* element);
 	void EnsureTitleObject(Size size, const WindowStyle& windowStyle, const std::wstring& text, bool hasCloseButton);
-	void EnsureCloseButtonObject(Size size, const WindowStyle& windowStyle);
+	void EnsureCloseButtonObject(Size size, const WindowStyle& windowStyle, WindowCloseButton closeButtonType);
 	void EnsureGraphicObject(Size size, const WindowStyle& windowStyle);
 	void EnsureContentObject(Size size, const WindowStyle& windowStyle);
-	void HandleDragging();
 
 // - PROPERTIES -
 public:

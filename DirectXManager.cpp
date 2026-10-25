@@ -1,6 +1,7 @@
 #include "DirectXManager.h"
 
 // --- ADDITIONAL INCLUDES ---
+#include <Effects.h>	// for EffectFactory
 #include "Window.h"
 #include "Settings.h"
 #include "Deleters.h"
@@ -21,7 +22,14 @@ DirectXManager* DirectXManager::ms_instance = nullptr;
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 DirectXManager::DirectXManager()
 {
-	Initialize(SCREEN_WIDTH, SCREEN_HEIGHT, VSYNC_ENABLED, WINDOWHWND, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!Initialize(SCREEN_WIDTH, SCREEN_HEIGHT, VSYNC_ENABLED, WINDOWHWND, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR))
+		return;
+
+	if (m_device == nullptr)
+		return;
+
+	m_effectFactory = new DirectX::DX11::EffectFactory(m_device);
+	m_effectFactory->SetDirectory(L"assets/textures/");
 }
 
 DirectXManager::~DirectXManager()
@@ -42,6 +50,8 @@ DirectXManager::~DirectXManager()
 	SAFE_RELEASE(m_deviceContext);
 	SAFE_RELEASE(m_device);
 	SAFE_RELEASE(m_swapChain);
+
+	SAFE_DELETE(m_effectFactory);
 
 	ms_instance = nullptr;
 }
@@ -341,13 +351,13 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 	screenAspect = (float)screenWidth / (float)screenHeight;
 
 	// Create the projection matrix for 3D rendering
-	m_projectionMatrix = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+	m_projectionMatrix = DXMATRIXPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 
 	// Initialize the world matrix to the identity matrix  <--- Camera
-	m_worldMatrix = XMMatrixIdentity();
+	m_worldMatrix = DXMATRIXIdentity();
 
 	// Create an orthographic projection matrix for 2D rendering
-	m_orthoMatrix = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
+	m_orthoMatrix = DXMATRIXOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 	*/
 
 	// Clear the second depth stencil state before setting the parameters

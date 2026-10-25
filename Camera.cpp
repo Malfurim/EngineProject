@@ -41,13 +41,13 @@ Camera::~Camera()
 
 void Camera::Render()
 {
-	XMFLOAT3 up = { 0.0f, 1.0f, 0.0f };
-	XMFLOAT3 position = m_position;
-	XMFLOAT3 lookAt = { 0.0f, 0.0f, 1.0f };
+	DXFLOAT3 up = { 0.0f, 1.0f, 0.0f };
+	DXFLOAT3 position = m_position;
+	DXFLOAT3 lookAt = { 0.0f, 0.0f, 1.0f };
 
-	XMVECTOR upVector = XMLoadFloat3(&up);
-	XMVECTOR positionVector = XMLoadFloat3(&position);
-	XMVECTOR lookAtVector = XMLoadFloat3(&lookAt);
+	DXVECTOR upVector = XMLoadFloat3(&up);
+	DXVECTOR positionVector = XMLoadFloat3(&position);
+	DXVECTOR lookAtVector = XMLoadFloat3(&lookAt);
 
 	// PI / 180.0f
 	float oneDegree = 0.0174532925f;
@@ -56,7 +56,7 @@ void Camera::Render()
 	float roll = m_rotation.z * oneDegree;
 
 	// Create the rotation matrix from the yaw, pitch and roll values
-	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+	DXMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
 
 	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin
 	lookAtVector = XMVector3TransformCoord(lookAtVector, rotationMatrix);
@@ -82,15 +82,15 @@ void Camera::Render()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	GETTERS & SETTERS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void Camera::GetViewMatrix(XMMATRIX& viewMatrix)
+void Camera::GetViewMatrix(DXMATRIX& viewMatrix)
 {
-	XMFLOAT3 up = { 0.0f, 1.0f, 0.0f };
-	XMFLOAT3 position = m_position;
-	XMFLOAT3 lookAt = { 0.0f, 0.0f, 1.0f };
+	DXFLOAT3 up = { 0.0f, 1.0f, 0.0f };
+	DXFLOAT3 position = m_position;
+	DXFLOAT3 lookAt = { 0.0f, 0.0f, 1.0f };
 
-	XMVECTOR upVector = XMLoadFloat3(&up);
-	XMVECTOR positionVector = XMLoadFloat3(&position);
-	XMVECTOR lookAtVector = XMLoadFloat3(&lookAt);
+	DXVECTOR upVector = XMLoadFloat3(&up);
+	DXVECTOR positionVector = XMLoadFloat3(&position);
+	DXVECTOR lookAtVector = XMLoadFloat3(&lookAt);
 
 	// PI / 180.0f
 	float oneDegree = 0.0174532925f;
@@ -99,7 +99,7 @@ void Camera::GetViewMatrix(XMMATRIX& viewMatrix)
 	float roll = m_rotation.z * oneDegree;
 
 	// Create the rotation matrix from the yaw, pitch and roll values
-	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+	DXMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
 
 	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin
 	lookAtVector = XMVector3TransformCoord(lookAtVector, rotationMatrix);

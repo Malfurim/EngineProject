@@ -2,6 +2,7 @@
 
 // --- INCLUDES ---
 #include <string>
+#include "ResourceBase.h"
 
 // --- CONSTANTS ---
 
@@ -15,7 +16,7 @@
 // --- FORWARD DECLARATIONS ---
 struct ID3D11ShaderResourceView;
 
-class Texture
+class Texture : public ResourceBase
 {
 // - INTERFACE -
 public:
@@ -36,7 +37,6 @@ public:
 
 	// --- GETTERS & SETTERS ---
 	ID3D11ShaderResourceView* GetTexture() const { return m_texture; }
-	std::wstring GetName() const { return m_name; }
 	int GetWidth() const { return m_width; }
 	int GetHeight() const { return m_height; }
 
@@ -93,7 +93,6 @@ private:
 
 	// --- PRIVATE COMPONENT DATA ---
 	ID3D11ShaderResourceView* m_texture{ nullptr };
-	std::wstring m_name;
 	std::wstring m_path;
 	int m_width{ 0 };
 	int m_height{ 0 };

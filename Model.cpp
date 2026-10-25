@@ -11,32 +11,13 @@ Model::~Model()
 	SAFE_RELEASE(m_vertexBuffer);
 	SAFE_RELEASE(m_indexBuffer);
 	SAFE_DELETE_ARRAY(m_model);
-	/*
-	if (m_vertexBuffer)
-	{
-		m_vertexBuffer->Release();
-		m_vertexBuffer = nullptr;
-	}
-
-	if (m_indexBuffer)
-	{
-		m_indexBuffer->Release();
-		m_indexBuffer = nullptr;
-	}
-
-	if (m_model)
-	{
-		delete[] m_model;
-		m_model = nullptr;
-	}
-	*/
 }
 
-bool Model::Initialize(ID3D11Device* device, LPCWSTR modelPath, bool writeable)
+bool Model::Initialize(const std::wstring& filePath, const std::wstring& name, bool enableMipmap)
 {
 	// change to only load vertex and index buffers???
-
-	LoadModel(modelPath);
+	/*
+	LoadModel(filePath);
 
 	VertexType* vertices;
 	unsigned long* indices;
@@ -57,9 +38,9 @@ bool Model::Initialize(ID3D11Device* device, LPCWSTR modelPath, bool writeable)
 	// Load the vertex array and index array with data
 	for (int i = 0; i < m_vertexCount; i++)
 	{
-		vertices[i].position = XMFLOAT3(m_model[i].x, m_model[i].y, m_model[i].z);
-		vertices[i].texture = XMFLOAT2(m_model[i].tu, m_model[i].tv);
-		//vertices[i].normal = XMFLOAT3(m_model[i].nx, m_model[i].ny, m_model[i].nz);
+		vertices[i].position = DXFLOAT3(m_model[i].x, m_model[i].y, m_model[i].z);
+		vertices[i].texture = DXFLOAT2(m_model[i].tu, m_model[i].tv);
+		//vertices[i].normal = DXFLOAT3(m_model[i].nx, m_model[i].ny, m_model[i].nz);
 
 		indices[i] = i;
 	}
@@ -110,7 +91,7 @@ bool Model::Initialize(ID3D11Device* device, LPCWSTR modelPath, bool writeable)
 
 	delete[] indices;
 	indices = nullptr;
-
+	*/
 	return true;
 }
 
@@ -203,7 +184,3 @@ int Model::GetVertexCount()
 	return m_vertexCount;
 }
 
-std::wstring Model::GetName()
-{
-	return m_name;
-}

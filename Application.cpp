@@ -69,11 +69,11 @@ bool Application::Initialize()
 		XMMatrixOrthographicLH((float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, SCREEN_NEAR, SCREEN_DEPTH)	// Ortho Matrix
 	};
 	
-	UIWindow* w1 = new UIWindow({ 400, 255 }, { 800, 450 }, L"Main Test Panel", false, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_FULL);
+	UIWindow* w1 = new UIWindow({ 400, 255 }, { 800, 450 }, L"Main Test Panel", true, WindowCloseButton::CLOSEBUTTON_NONE, WINDOWSTYLE(L"default"), WindowDrag::DRAG_FULL);
 	UIADD(w1);
 	
-	UIText* t1 = new UIText({ 0, 0 }, { 800, 450 }, FONT(L"default"));
-	t1->SetFontSize(20.0f);
+	UIText* t1 = new UIText({ 0, 0 }, { w1->GetContentSize() }, FONT(L"default"));
+	t1->SetFontSizeTotal(20.0f);
 	//t1->SetMaxLength(128);
 	t1->SetText(L"My first test\nof TEXT rendering\non multiple lines\nand centered in both\nhorizontal and vertical\npositions...");
 	t1->SetFontColor({ 0.0, 0.8f, 0.0f, 1.0f });
@@ -99,7 +99,7 @@ bool Application::Initialize()
 	b1->SetBackgroundColor({ 0.0f, 0.5f, 0.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
 	b1->SetBackgroundColor({ 0.0f, 0.0f, 0.5f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
 	b1->SetFont(FONT(L"default"));
-	b1->SetFontSize(20.0f);
+	b1->SetFontSizeTotal(20.0f);
 	b1->SetFontColor({ 0.8f, 0.8f, 0.8f, 1.0f });
 	b1->EnableRepeatable();
 	w1->AddChild(b1);
@@ -137,13 +137,13 @@ bool Application::Initialize()
 		};
 	b1->SetText(STR(Number));
 
-	UIWindow* w2 = new UIWindow({ 700, 30 }, {200, 100}, L"Test Window", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIWindow* w2 = new UIWindow({ 700, 30 }, { 200, 100 }, L"Test Window", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
 	UIADD(w2);
-	UIWindow* w3 = new UIWindow({ 950, 30 }, { 200, 100 }, L"Test Window 2", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIWindow* w3 = new UIWindow({ 950, 30 }, { 200, 100 }, L"Test Window 2", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
 	UIADD(w3);
-	UIWindow* w4 = new UIWindow({ 700, 150 }, { 200, 100 }, L"Test Window 3 static", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
-	UIADD2(w4, WindowType::WINDOW_STATIC);
-	UIWindow* w5 = new UIWindow({ 950, 150 }, { 200, 100 }, L"Test Window 4 front", true, true, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIWindow* w4 = new UIWindow({ 700, 150 }, { 200, 100 }, L"Test Window 3 back", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
+	UIADD2(w4, WindowType::WINDOW_FORCEDBACK);
+	UIWindow* w5 = new UIWindow({ 950, 150 }, { 200, 100 }, L"Test Window 4 front", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
 	UIADD2(w5, WindowType::WINDOW_FORCEDFRONT);
 
 	t1 = nullptr;
@@ -273,7 +273,7 @@ void Application::Shutdown()
 
 void Application::UpdateInput()
 {
-	if (ISKEYPRESSED(VK_F4))
+	if (ISKEYPRESSED(VK_F3))
 	{
 		DEBUG->Visibility = !DEBUG->Visibility;
 	}
@@ -295,8 +295,8 @@ void Application::UpdateUI()
 {
 	float delta = (float)DELTAUI;
 
-	XMFLOAT3 camera = m_camera->GetPosition();
-	XMFLOAT3 camRot = m_camera->GetRotation();
+	DXFLOAT3 camera = m_camera->GetPosition();
+	DXFLOAT3 camRot = m_camera->GetRotation();
 	bool change = false;
 	bool change2 = false;
 
@@ -305,19 +305,19 @@ void Application::UpdateUI()
 	float speed2 = 60.0f * delta;
 	float speed3 = 120.0f * delta;
 	
-	XMFLOAT3 position = m_camera->GetPosition();
-	XMFLOAT3 rotation = m_camera->GetRotation();
-	XMFLOAT3 lookAt = { 0.0f, 0.0f, 1.0f };
-	XMFLOAT3 lookRight = { 1.0f, 0.0f, 0.0f };
-	XMFLOAT3 lookUp = { 0.0f, 1.0f, 0.0f };
-	XMFLOAT3 cameraFront{};
-	XMFLOAT3 cameraRight{};
-	XMFLOAT3 cameraUp{};
+	DXFLOAT3 position = m_camera->GetPosition();
+	DXFLOAT3 rotation = m_camera->GetRotation();
+	DXFLOAT3 lookAt = { 0.0f, 0.0f, 1.0f };
+	DXFLOAT3 lookRight = { 1.0f, 0.0f, 0.0f };
+	DXFLOAT3 lookUp = { 0.0f, 1.0f, 0.0f };
+	DXFLOAT3 cameraFront{};
+	DXFLOAT3 cameraRight{};
+	DXFLOAT3 cameraUp{};
 
-	XMVECTOR positionVector = XMLoadFloat3(&position);
-	XMVECTOR lookAtVector = XMLoadFloat3(&lookAt);
-	XMVECTOR lookRightVector = XMLoadFloat3(&lookRight);
-	XMVECTOR lookUpVector = XMLoadFloat3(&lookUp);
+	DXVECTOR positionVector = XMLoadFloat3(&position);
+	DXVECTOR lookAtVector = XMLoadFloat3(&lookAt);
+	DXVECTOR lookRightVector = XMLoadFloat3(&lookRight);
+	DXVECTOR lookUpVector = XMLoadFloat3(&lookUp);
 
 	// PI / 180.0f
 	float oneDegree = 0.0174532925f;
@@ -326,7 +326,7 @@ void Application::UpdateUI()
 	float roll = rotation.z * oneDegree;
 
 	// Create the rotation matrix from the yaw, pitch and roll values
-	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+	DXMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
 
 	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin
 	lookAtVector = XMVector3TransformCoord(lookAtVector, rotationMatrix);
@@ -435,7 +435,7 @@ void Application::UpdateUI()
 			m_camera->SetRotation(camRot.x, camRot.y, camRot.z);
 	}
 
-	std::wstring text = L"delta: " + ToWStringWithPrecision(delta, 5) + L"s\n" +
+	std::wstring text = L"delta: " + ToWStringWithPrecision(DELTA, 8) + L"s\n" +
 		L"Mouse: X " + ToWStringWithPrecision(MOUSEPOSITION.X, 0) + L", Y " + ToWStringWithPrecision(MOUSEPOSITION.Y, 0) + L"\n" +
 		L"Camera Position:\n" +
 		L"X " + ToWStringWithPrecision(m_camera->GetPosition().x, 3) + L", Y " + ToWStringWithPrecision(m_camera->GetPosition().y, 3) + L", Z " + ToWStringWithPrecision(m_camera->GetPosition().z, 3) + L"\n" +
@@ -480,11 +480,11 @@ void Application::Render()
 {
 	DXMANAGER->BeginScene(0.6875f, 0.765625f, 0.8671875f, 1.0f);
 
-	XMMATRIX viewMatrix;
-	XMMATRIX worldMatrix;
-	XMMATRIX projectionMatrix;
-	XMMATRIX orthoMatrix;
-	XMMATRIX translateMatrix;
+	DXMATRIX viewMatrix;
+	DXMATRIX worldMatrix;
+	DXMATRIX projectionMatrix;
+	DXMATRIX orthoMatrix;
+	DXMATRIX translateMatrix;
 
 	m_camera->GetViewMatrix(viewMatrix);
 	worldMatrix = m_renderMatrix.worldMatrix;
@@ -494,8 +494,8 @@ void Application::Render()
 	/*
 	for (int i = 0; i < 256; i++)
 	{
-		translateMatrix = XMMatrixTranslation((i % 16), 0, ((i / 16) % 16));
-		worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), translateMatrix);
+		translateMatrix = DXMATRIXTranslation((i % 16), 0, ((i / 16) % 16));
+		worldMatrix = DXMATRIXMultiply(DXMATRIXIdentity(), translateMatrix);
 		ENTITY->GetEntity(0)->Render(DXDEVICECONTEXT, worldMatrix, viewMatrix, projectionMatrix);
 	}
 	*/

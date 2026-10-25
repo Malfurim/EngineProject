@@ -21,7 +21,14 @@
 
 
 // --- FORWARD DECLARATIONS ---
-
+namespace DirectX
+{
+	inline namespace DX11
+	{
+		class EffectFactory;
+		class IEffectFactory;
+	}
+}
 
 class DirectXManager
 {
@@ -53,6 +60,7 @@ public:
 	void GetVideoCardInfo(char* cardName, int& memory);
 	void SetBackBufferRenderTarget();
 	double GetRefreshRate() const { return m_refreshRate; }
+	DirectX::DX11::EffectFactory* GetEffectFactory() const { return m_effectFactory; }
 
 	// --- STATIC CLASS API ---
 	static DirectXManager* Instance();
@@ -119,12 +127,14 @@ private:
 	ID3D11RasterizerState* m_rasterState{ nullptr };
 	ID3D11BlendState* m_alphaEnabledBlendingState{ nullptr };
 	ID3D11BlendState* m_alphaDisabledBlendingState{ nullptr };
-	//XMMATRIX m_projectionMatrix;
-	//XMMATRIX m_worldMatrix;
-	//XMMATRIX m_orthoMatrix;
+	//DXMATRIX m_projectionMatrix;
+	//DXMATRIX m_worldMatrix;
+	//DXMATRIX m_orthoMatrix;
 	D3D11_VIEWPORT m_viewport{ NULL };
 
 	double m_refreshRate = 0.0;
+
+	DirectX::DX11::EffectFactory* m_effectFactory{ nullptr };
 
 	// --- STATIC GLOBAL STATES ---
 	static DirectXManager* ms_instance;

@@ -45,6 +45,15 @@ void UserInterface::Update()
 {
 	for (auto* window : m_windows)
 		window->Update();
+
+	if (!m_windowsToDestroy.empty())
+	{
+		for (auto* window : m_windowsToDestroy)
+		{
+			delete window;
+		}
+		m_windowsToDestroy.clear();
+	}
 }
 
 void UserInterface::Render()
@@ -73,11 +82,11 @@ void UserInterface::AddWindow(UIWindow* window, WindowType windowType)
 	std::vector<UIWindow*>::iterator insertPosition;
 	switch (windowType)
 	{
-	case WindowType::WINDOW_STATIC:
-		zIndex = STATIC_WINDOW_OFFSET + m_staticWindows;
-		insertPosition = m_windows.begin() + m_staticWindows;
+	case WindowType::WINDOW_FORCEDBACK:
+		zIndex = BACK_WINDOW_OFFSET + m_forcedBackWindows;
+		insertPosition = m_windows.begin() + m_forcedBackWindows;
 		window->m_dragType = WindowDrag::DRAG_NONE;
-		m_staticWindows++;
+		m_forcedBackWindows++;
 		break;
 
 	case WindowType::WINDOW_FORCEDFRONT:
@@ -117,6 +126,7 @@ bool UserInterface::RemoveWindow(UIWindow* window)
 		DecreaseWindowCount(i);
 		m_windows.erase(index);
 		ResetZIndexes(i);
+		m_windowsToDestroy.push_back(window);
 		return true;
 	}
 	return false;
@@ -179,6 +189,8 @@ bool UserInterface::MouseEvent(MouseButton mouseButton, InputEventType eventType
 		return true;
 	}
 
+	Interactive::RemoveFocus(FocusType::FOCUS_TYPE_UI);
+
 	return false;
 }
 
@@ -198,17 +210,17 @@ void UserInterface::SetToFront(UIWindow* window)
 		return;
 
 	int zIndex = window->m_zIndex;
-	int startIndex = m_staticWindows + m_interactiveWindows - 1;
-	int endIndex = m_staticWindows + zIndex - INTERACTIVE_WINDOW_OFFSET;
+	int startIndex = m_forcedBackWindows + m_interactiveWindows - 1;
+	int endIndex = m_forcedBackWindows + zIndex - INTERACTIVE_WINDOW_OFFSET;
 
 	if (endIndex == startIndex)
 		return;
 
 	for (int i = startIndex; i > endIndex; i--)
 	{
-		m_windows[i]->SetZIndex(INTERACTIVE_WINDOW_OFFSET + i - m_staticWindows - 1);
+		m_windows[i]->SetZIndex(INTERACTIVE_WINDOW_OFFSET + i - m_forcedBackWindows - 1);
 	}
-	window->SetZIndex(INTERACTIVE_WINDOW_OFFSET + startIndex - m_staticWindows);
+	window->SetZIndex(INTERACTIVE_WINDOW_OFFSET + startIndex - m_forcedBackWindows);
 	SortWindows();
 }
 
@@ -237,22 +249,25 @@ UserInterface* UserInterface::Instance()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void UserInterface::ResetZIndexes(int removedIndex)
 {
+	if (removedIndex >= m_windows.size())
+		return;
+
 	int startIndex = removedIndex;
 	int endIndex = 0;
 	int zIndex = 0;
 
-	if (removedIndex == 0) zIndex = STATIC_WINDOW_OFFSET;
-	else if (removedIndex == m_staticWindows) zIndex = INTERACTIVE_WINDOW_OFFSET;
-	else if (removedIndex == m_staticWindows + m_interactiveWindows) zIndex = FRONT_WINDOW_OFFSET;
+	if (removedIndex == 0 && m_forcedBackWindows > 0) zIndex = BACK_WINDOW_OFFSET;
+	else if (removedIndex == m_forcedBackWindows) zIndex = INTERACTIVE_WINDOW_OFFSET;
+	else if (removedIndex == m_forcedBackWindows + m_interactiveWindows) zIndex = FRONT_WINDOW_OFFSET;
 	else zIndex = m_windows[removedIndex - 1]->m_zIndex + 1;
 
-	if (removedIndex < m_staticWindows)
+	if (removedIndex < m_forcedBackWindows)
 	{
-		endIndex = m_staticWindows;
+		endIndex = m_forcedBackWindows;
 	}
-	else if  (removedIndex >= m_staticWindows && removedIndex < (m_staticWindows + m_interactiveWindows))
+	else if  (removedIndex >= m_forcedBackWindows && removedIndex < (m_forcedBackWindows + m_interactiveWindows))
 	{
-		endIndex = m_staticWindows + m_interactiveWindows;
+		endIndex = m_forcedBackWindows + m_interactiveWindows;
 	}
 	else
 	{
@@ -268,15 +283,15 @@ void UserInterface::ResetZIndexes(int removedIndex)
 
 void UserInterface::DecreaseWindowCount(int index)
 {
-	if (index >= 0 && index < m_staticWindows)
+	if (index >= 0 && index < m_forcedBackWindows)
 	{
-		m_staticWindows--;
+		m_forcedBackWindows--;
 	}
-	else if (index >= m_staticWindows && index < m_interactiveWindows + m_staticWindows)
+	else if (index >= m_forcedBackWindows && index < m_interactiveWindows + m_forcedBackWindows)
 	{
 		m_interactiveWindows--;
 	}
-	else if (index >= m_interactiveWindows + m_staticWindows && index < m_forcedFrontWindows + m_interactiveWindows + m_staticWindows)
+	else if (index >= m_interactiveWindows + m_forcedBackWindows && index < m_forcedFrontWindows + m_interactiveWindows + m_forcedBackWindows)
 	{
 		m_forcedFrontWindows--;
 	}

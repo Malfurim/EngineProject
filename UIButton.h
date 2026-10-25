@@ -47,6 +47,7 @@ public:
 	void SetText(std::wstring text);
 	void SetFont(Font* font);
 	void SetFontSize(float size);
+	void SetFontSizeTotal(float size);
 	void SetFontColor(Color color);
 	void SetMaxLength(int length);
 

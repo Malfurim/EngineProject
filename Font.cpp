@@ -40,7 +40,7 @@ bool Font::Initialize(const std::wstring& filePath, Texture* textureData)
 	m_name = GetFilename(filePath);
 	m_texture = textureData;
 
-	if (!LoadCharacterData2(filePath))
+	if (!LoadCharacterData(filePath))
 	{
 		return false;
 	}
@@ -63,12 +63,18 @@ bool Font::Initialize(const std::wstring& filePath, Texture* textureData)
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CLASS API												//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+// for future custom made font images with constant 1 pixel space between characters
+// first line numbers -> ascenderHeight(Š), capHeight(S), descenderHeight(g)
+// font data in format: # 0 8 -> where:
+// # - character
+// 0 - line number on the image (0 = first)
+// 8 - width of the character in pixels
+
 bool Font::LoadCharacterData(const std::wstring& filePath)
 {
 	std::wifstream file;
 	CharacterData data;
 	std::wstring line;
-	
 
 	file.open(filePath);
 	if (file.fail())
@@ -76,49 +82,21 @@ bool Font::LoadCharacterData(const std::wstring& filePath)
 		return false;
 	}
 
-	while (std::getline(file, line))
-	{
-		if (line.empty())
-			continue;
+	float ascender = 0.0f;
+	float cap = 0.0f;
+	float descender = 0.0f;
+	float total = 0.0f;
 
-		wchar_t dataIndex = line[0];
-
-		std::wstringstream lineStream(line.substr(1));
-
-		CharacterData data;
-		if (lineStream >> data.left >> data.right >> data.size)
-		{
-			m_characters[dataIndex] = data;
-		}
-	}
-
-	file.close();
-
-	return true;
-}
-
-// for future custom made font images with constant 1 pixel space between characters
-// font data in format: # 0 8 -> where:
-// # - character
-// 0 - line number on the image (0 = first)
-// 8 - width of the character in pixels
-bool Font::LoadCharacterData2(const std::wstring& filePath)
-{
-	std::wifstream file;
-	CharacterData data;
-	std::wstring line;
-
-	file.open(filePath);
-	if (file.fail())
-	{
-		return false;
-	}
-
-	file >> m_fontHeight;
+	file >> ascender;
+	file >> cap;
+	file >> descender;
 	file.ignore(1000, L'\n');
 
+	total = ascender + cap + descender;
+	m_fontHeight = { ascender, cap, descender, total };
+
 	float oldLineNumber = 0.0f;
-	float lineHeight = m_fontHeight / (float)m_texture->GetHeight();
+	float lineHeight = m_fontHeight.totalHeight / (float)m_texture->GetHeight();
 	float pointWidth = 1.0f / (float)m_texture->GetWidth();
 	float x = 0.0f;
 

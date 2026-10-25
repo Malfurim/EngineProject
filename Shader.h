@@ -2,7 +2,7 @@
 
 // --- INCLUDES ---
 #include <d3d11.h>
-#include <directxmath.h>
+#include "DXMath.h"
 #include <string>
 
 // --- CONSTANTS ---
@@ -15,7 +15,6 @@
 
 
 // --- FORWARD DECLARATIONS ---
-using namespace DirectX;
 
 
 class Shader
@@ -39,7 +38,7 @@ public:
 
 
 	// --- GETTERS & SETTERS ---
-	bool SetShaderParameters(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix);
+	bool SetShaderParameters(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX projectionMatrix);
 
 	// --- STATIC CLASS API ---
 
@@ -94,9 +93,9 @@ private:
 	// --- PRIVATE STRUCTS & ENUMS ---
 	struct MatrixBufferType
 	{
-		XMMATRIX worldMatrix;
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
+		DXMATRIX worldMatrix;
+		DXMATRIX viewMatrix;
+		DXMATRIX projectionMatrix;
 	};
 
 	// --- PRIVATE COMPONENT STATES ---

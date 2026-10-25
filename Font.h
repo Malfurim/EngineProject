@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include <unordered_map>
 #include "Texture.h"
+#include "FontHeight.h"
 
 // --- CONSTANTS ---
 
@@ -40,13 +41,12 @@ public:
 
 	// --- CLASS API ---
 	bool LoadCharacterData(const std::wstring& filePath);
-	bool LoadCharacterData2(const std::wstring& filePath);
 
 	// --- GETTERS & SETTERS ---
 	std::wstring GetName() const { return m_name; }
 	ID3D11ShaderResourceView* GetTexture() const { return m_texture->GetTexture(); }
 	CharacterData GetCharacter(wchar_t character);
-	float GetFontHeight() const { return m_fontHeight; }
+	const FontHeight& GetFontHeight() const { return m_fontHeight; }
 
 	// --- STATIC CLASS API ---
 
@@ -104,7 +104,7 @@ private:
 	std::wstring m_path{};
 	std::unordered_map<wchar_t, CharacterData> m_characters;
 	Texture* m_texture{ nullptr };
-	float m_fontHeight{ 0.0f };
+	FontHeight m_fontHeight;
 	int m_spaceSize{ 0 };
 
 	// --- STATIC GLOBAL STATES ---

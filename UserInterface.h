@@ -7,7 +7,7 @@
 
 
 // --- MACROS & DEFINES ---
-static constexpr int STATIC_WINDOW_OFFSET = 0;
+static constexpr int BACK_WINDOW_OFFSET = 0;
 static constexpr int INTERACTIVE_WINDOW_OFFSET = 1000;
 static constexpr int FRONT_WINDOW_OFFSET = 1000000;
 
@@ -19,7 +19,7 @@ static constexpr int FRONT_WINDOW_OFFSET = 1000000;
 // --- ENUMS & STRUCTS ---
 enum class WindowType
 {
-	WINDOW_STATIC,
+	WINDOW_FORCEDBACK,
 	WINDOW_INTERACTIVE,
 	WINDOW_FORCEDFRONT,
 };
@@ -112,7 +112,8 @@ private:
 
 	// --- PRIVATE COMPONENT DATA ---
 	std::vector<UIWindow*> m_windows;
-	int m_staticWindows{ 0 };
+	std::vector<UIWindow*> m_windowsToDestroy;
+	int m_forcedBackWindows{ 0 };
 	int m_interactiveWindows{ 0 };
 	int m_forcedFrontWindows{ 0 };
 

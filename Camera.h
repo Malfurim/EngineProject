@@ -1,7 +1,7 @@
 #pragma once
 
 // --- INCLUDES ---
-#include <DirectXMath.h>
+#include "DXMath.h"
 
 // --- CONSTANTS ---
 
@@ -13,7 +13,6 @@
 
 
 // --- FORWARD DECLARATIONS ---
-using namespace DirectX;
 
 class Camera
 {
@@ -36,13 +35,13 @@ public:
 
 
 	// --- GETTERS & SETTERS ---
-	XMFLOAT3 GetPosition() const { return m_position; }
+	DXFLOAT3 GetPosition() const { return m_position; }
 	void SetPosition(float x, float y, float z) { m_position = { x, y, z }; }
 	
-	XMFLOAT3 GetRotation() const { return m_rotation; }
+	DXFLOAT3 GetRotation() const { return m_rotation; }
 	void SetRotation(float x, float y, float z) { m_rotation = { x, y, z }; }
 
-	void GetViewMatrix(XMMATRIX& viewMatrix);
+	void GetViewMatrix(DXMATRIX& viewMatrix);
 
 	// --- STATIC CLASS API ---
 
@@ -96,10 +95,10 @@ private:
 
 
 	// --- PRIVATE COMPONENT DATA ---
-	XMFLOAT3 m_position{};
-	XMFLOAT3 m_rotation{};
+	DXFLOAT3 m_position{};
+	DXFLOAT3 m_rotation{};
 
-	XMMATRIX m_viewMatrix{};
+	DXMATRIX m_viewMatrix{};
 
 	// --- STATIC GLOBAL STATES ---
 

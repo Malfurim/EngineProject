@@ -1,7 +1,7 @@
 #pragma once
 
 // --- INCLUDES ---
-#include <DirectXMath.h>
+#include "DXMath.h"
 
 // --- CONSTANTS ---
 
@@ -17,7 +17,6 @@ class Camera;
 class UIPanel;
 class UIText;
 class UIImage;
-using namespace DirectX;
 
 class Application
 {
@@ -93,9 +92,9 @@ private:
 	// --- PRIVATE STRUCTS & ENUMS ---
 	struct RenderMatrix
 	{
-		XMMATRIX worldMatrix;
-		XMMATRIX projectionMatrix;
-		XMMATRIX orthoMatrix;
+		DXMATRIX worldMatrix;
+		DXMATRIX projectionMatrix;
+		DXMATRIX orthoMatrix;
 	};
 
 	// --- PRIVATE COMPONENT STATES ---

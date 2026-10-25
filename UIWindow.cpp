@@ -5,8 +5,8 @@
 #include "UIImage.h"
 #include "UIButton.h"
 #include "ResourceManager.h"
+#include "UserInterface.h"
 #include "Deleters.h"
-#include <Windows.h>
 
 // --- MACROS & DEFINES ---
 
@@ -23,7 +23,7 @@ Position UIWindow::ms_previousMouseDragPosition{ 0.0f, 0.0f };
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-UIWindow::UIWindow(Position position, Size size, const std::wstring& titleText, bool hasCloseButton, bool openAtInitialPosition, const WindowStyle& windowStyle, WindowDrag dragType) :
+UIWindow::UIWindow(Position position, Size size, const std::wstring& titleText, bool openAtInitialPosition, WindowCloseButton closeButtonType, const WindowStyle& windowStyle, WindowDrag dragType) :
 	UIPanel(position, size)
 {
 	m_openAtInitialPosition = openAtInitialPosition;
@@ -42,8 +42,9 @@ UIWindow::UIWindow(Position position, Size size, const std::wstring& titleText, 
 		EnsureGraphicObject(size, windowStyle);
 	}
 
+	bool hasCloseButton = (closeButtonType != WindowCloseButton::CLOSEBUTTON_NONE);
 	if (!titleText.empty())	EnsureTitleObject(size, windowStyle, titleText, hasCloseButton);
-	if (hasCloseButton)		EnsureCloseButtonObject(size, windowStyle);
+	if (hasCloseButton)		EnsureCloseButtonObject(size, windowStyle, closeButtonType);
 	EnsureContentObject(size, windowStyle);
 	m_initialized = true;
 }
@@ -147,6 +148,12 @@ void UIWindow::Close()
 	Visibility = false;
 }
 
+void UIWindow::Destroy()
+{
+	RemoveFocus(FocusType::FOCUS_TYPE_UI);
+	UI->RemoveWindow(this);
+}
+
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	GETTERS & SETTERS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -216,7 +223,7 @@ void UIWindow::EnsureTitleObject(Size size, const WindowStyle& windowStyle, cons
 	m_titleBar = new UIPanel();
 	m_titleBar->SetPosition(0.0f, 0.0f);
 	m_titleBar->SetSize(sizeX, sizeY);
-	AddStructureChild(m_titleBar);
+	AddChild(m_titleBar);
 
 	UIImage* titleImage = new UIImage();
 	titleImage->SetPosition(0.0f, 0.0f);
@@ -237,7 +244,7 @@ void UIWindow::EnsureTitleObject(Size size, const WindowStyle& windowStyle, cons
 	titleText->SetPosition(0.0f, windowStyle.borderSize + 1.0f);
 	titleText->SetSize(sizeX, sizeY - (windowStyle.borderSize * 2.0f) - 2.0f);
 	titleText->SetFont(FONT(windowStyle.titleBarFont));
-	titleText->SetFontSize(sizeY - (windowStyle.borderSize * 2.0f));
+	titleText->SetFontSizeTotal(sizeY - (windowStyle.borderSize * 2.0f));
 	titleText->SetTextAlignment(HorizontalTextAlignment::HORIZONTAL_TEXT_ALIGNMENT_CENTER, VerticalTextAlignment::VERTICAL_TEXT_ALIGNMENT_MIDDLE);
 	titleText->SetText(text);
 	m_titleBar->AddChild(titleText);
@@ -246,7 +253,7 @@ void UIWindow::EnsureTitleObject(Size size, const WindowStyle& windowStyle, cons
 	titleText = nullptr;
 }
 
-void UIWindow::EnsureCloseButtonObject(Size size, const WindowStyle& windowStyle)
+void UIWindow::EnsureCloseButtonObject(Size size, const WindowStyle& windowStyle, WindowCloseButton closeButtonType)
 {
 	if (m_closeButton != nullptr)
 		return;
@@ -258,7 +265,13 @@ void UIWindow::EnsureCloseButtonObject(Size size, const WindowStyle& windowStyle
 	m_closeButton->SetImage(TEXTURE(windowStyle.closeButtonTexture + L"_idle"), ButtonState::BUTTON_STATE_IDLE);
 	m_closeButton->SetImage(TEXTURE(windowStyle.closeButtonTexture + L"_hover"), ButtonState::BUTTON_STATE_HOVER);
 	m_closeButton->SetImage(TEXTURE(windowStyle.closeButtonTexture + L"_pressed"), ButtonState::BUTTON_STATE_PRESSED);
-	AddStructureChild(m_closeButton);
+	
+	if (closeButtonType == WindowCloseButton::CLOSEBUTTON_CLOSE)
+		m_closeButton->OnClick += [&](UIButton* sender) { Close(); };
+	else
+		m_closeButton->OnClick += [&](UIButton* sender) { Destroy(); };
+
+	AddChild(m_closeButton);
 }
 
 void UIWindow::EnsureGraphicObject(Size size, const WindowStyle& windowStyle)
@@ -271,7 +284,7 @@ void UIWindow::EnsureGraphicObject(Size size, const WindowStyle& windowStyle)
 	m_graphicTexture->SetSize(size);
 	m_graphicTexture->SetBorderSize(windowStyle.borderSize);
 	m_graphicTexture->SetImage(TEXTURE(windowStyle.backgroundTexture));
-	AddStructureChild(m_graphicTexture);
+	AddChild(m_graphicTexture);
 }
 
 void UIWindow::EnsureContentObject(Size size, const WindowStyle& windowStyle)
@@ -282,9 +295,5 @@ void UIWindow::EnsureContentObject(Size size, const WindowStyle& windowStyle)
 	m_content = new UIPanel();
 	m_content->SetPosition(windowStyle.borderSize, windowStyle.titleBarHeight);
 	m_content->SetSize(size.Width - (windowStyle.borderSize * 2), size.Height - windowStyle.borderSize - windowStyle.titleBarHeight);
-	AddStructureChild(m_content);
-}
-
-void UIWindow::HandleDragging()
-{
+	AddChild(m_content);
 }

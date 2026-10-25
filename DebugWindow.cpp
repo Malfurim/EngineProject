@@ -19,7 +19,7 @@ DebugWindow* DebugWindow::ms_instance = nullptr;
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-DebugWindow::DebugWindow() : UIWindow({ 0, 0 }, {SCREEN_WIDTH, SCREEN_HEIGHT}, L"", false, false, WINDOWSTYLE(L"empty"), WindowDrag::DRAG_NONE)
+DebugWindow::DebugWindow() : UIWindow({ 0, 0 }, { SCREEN_WIDTH, SCREEN_HEIGHT }, L"", false, WindowCloseButton::CLOSEBUTTON_NONE, WINDOWSTYLE(L"empty"), WindowDrag::DRAG_NONE)
 {
 	Visibility = false;
 	m_interactive = false;

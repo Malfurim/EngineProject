@@ -55,7 +55,7 @@ void GraphicBase::Update()
 	UpdateBufferData(m_vertexBufferBackground, m_verticesBackground, sizeof(SPCVertex) * m_vertexCount);
 }
 
-void GraphicBase::Render(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
+void GraphicBase::Render(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX projectionMatrix)
 {
 	if (m_background == BACKGROUND_NONE)
 		return;

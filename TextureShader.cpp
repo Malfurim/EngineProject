@@ -79,7 +79,7 @@ bool TextureShader::SetShaderParameters(ID3D11ShaderResourceView* texture)
 	return true;
 }
 
-bool TextureShader::SetShaderParameters(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
+bool TextureShader::SetShaderParameters(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX projectionMatrix)
 {
 	return Shader::SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
 }

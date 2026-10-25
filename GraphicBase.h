@@ -1,7 +1,7 @@
 #pragma once
 
 // --- INCLUDES ---
-#include <DirectXMath.h>
+#include "DXMath.h"
 #include "Interactive.h"
 #include "Color.h"
 
@@ -10,11 +10,11 @@
 
 // --- MACROS & DEFINES ---
 #define VERTEXSTRUCTSIZE sizeof(SPDNT2Vertex)
-typedef DirectX::XMFLOAT3 TPosition;
-typedef DirectX::XMFLOAT4 TColor;
-typedef DirectX::XMFLOAT3 TNormal;
-typedef DirectX::XMFLOAT3 TDiffuse;
-typedef DirectX::XMFLOAT2 TTextureCoordinate;
+typedef DXFLOAT3 TPosition;
+typedef DXFLOAT4 TColor;
+typedef DXFLOAT3 TNormal;
+typedef DXFLOAT3 TDiffuse;
+typedef DXFLOAT2 TTextureCoordinate;
 
 // --- ENUMS & STRUCTS ---
 enum BackgroundType
@@ -73,7 +73,6 @@ struct SPDNT2Vertex
 // --- FORWARD DECLARATIONS ---
 class Shader;
 struct ID3D11Buffer;
-using namespace DirectX;
 
 class GraphicBase : public Interactive
 {
@@ -85,7 +84,7 @@ public:
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
 	virtual void Update();
-	virtual void Render(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix);
+	virtual void Render(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX projectionMatrix);
 	static void Shutdown();
 
 	// --- VIRTUAL FUNCTIONS ---

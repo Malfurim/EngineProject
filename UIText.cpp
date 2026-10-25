@@ -209,7 +209,7 @@ void UIText::OnKeyDown(wchar_t key)
         break;
 
     case VK_UP:
-        if (m_cursorPosition.Y - m_fontHeight < m_textTop)
+        if (m_cursorPosition.Y - m_fontHeight.totalHeight < m_textTop)
         {
             m_cursorIndex = 0;
             m_updateCursorPosition = true;
@@ -217,7 +217,7 @@ void UIText::OnKeyDown(wchar_t key)
         }
         else
         {
-            m_cursorPosition.Y -= m_fontHeight;
+            m_cursorPosition.Y -= m_fontHeight.totalHeight;
             m_updateCursorPosition = false;
             m_locateCursorIndex = true;
             Invalidate(UpdateFlag::UPDATE_TEXT);
@@ -225,7 +225,7 @@ void UIText::OnKeyDown(wchar_t key)
         break;
 
     case VK_DOWN:
-        if (m_cursorPosition.Y + m_fontHeight > m_textBottom - m_fontHeight)
+        if (m_cursorPosition.Y + m_fontHeight.totalHeight > m_textBottom - m_fontHeight.totalHeight)
         {
             m_cursorIndex = m_text.length();
             m_updateCursorPosition = true;
@@ -233,7 +233,7 @@ void UIText::OnKeyDown(wchar_t key)
         }
         else
         {
-            m_cursorPosition.Y += m_fontHeight;
+            m_cursorPosition.Y += m_fontHeight.totalHeight;
             m_updateCursorPosition = false;
             m_locateCursorIndex = true;
             Invalidate(UpdateFlag::UPDATE_TEXT);
@@ -288,16 +288,32 @@ void UIText::SetFont(Font* font)
     if (m_font == font || font == nullptr)
         return;
     m_font = font;
-    if (m_fontHeight == 0.0f)
+    if (m_fontHeight.capHeight == 0.0f)
         m_fontHeight = font->GetFontHeight();
     Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
 void UIText::SetFontSize(float size)
 {
-    if (m_fontHeight == size)
+    if (m_fontHeight.capHeight == size)
         return;
-    m_fontHeight = size;
+    float scale = size / m_fontHeight.capHeight;
+    float ascender = m_fontHeight.ascenderHeight * scale;
+    float descender = m_fontHeight.descenderHeight * scale;
+    float totalHeight = ascender + size + descender;
+    m_fontHeight = { ascender, size, descender, totalHeight };
+    Invalidate(UpdateFlag::UPDATE_TEXT);
+}
+
+void UIText::SetFontSizeTotal(float size)
+{
+    if (m_fontHeight.totalHeight == size)
+        return;
+    float scale = size / m_fontHeight.totalHeight;
+    float ascender = m_fontHeight.ascenderHeight * scale;
+    float cap = m_fontHeight.capHeight * scale;
+    float descender = m_fontHeight.descenderHeight * scale;
+    m_fontHeight = { ascender, cap, descender, size };
     Invalidate(UpdateFlag::UPDATE_TEXT);
 }
 
@@ -403,7 +419,7 @@ void UIText::CalculateGeometry()
     unsigned long cursorIndex = (m_text.length() - CountOf(m_text, '\n')) * 4;
     // Index for correct vertex indexing in vertices
     unsigned long vertexIndex = 0;
-    float scale = m_fontHeight / m_font->GetFontHeight();
+    float scale = m_fontHeight.capHeight / m_font->GetFontHeight().capHeight;
 
     float top = GetVerticalStartPosition(lines.size());
     Position cursorPosition = { 0.0f, top };
@@ -416,10 +432,10 @@ void UIText::CalculateGeometry()
 
     // Get top and bottom Y of rendered text
     m_textTop = top;
-    m_textBottom = top + lines.size() * m_fontHeight;
+    m_textBottom = top + lines.size() * m_fontHeight.totalHeight;
 
     // Set max distance for distance check from cursor position to currently rendered character
-    float currentDistance = m_size.Width * m_size.Width + (m_size.Height * m_fontHeight) * (m_size.Height * m_fontHeight);
+    float currentDistance = m_size.Width * m_size.Width + (m_size.Height * m_fontHeight.totalHeight) * (m_size.Height * m_fontHeight.totalHeight);
 
     // Go through each line
     for (const auto& line : lines)
@@ -436,7 +452,7 @@ void UIText::CalculateGeometry()
             {
                 // Check if the cursor position is in character's render rectangle
                 bool hitX = (m_cursorPosition.X >= left && m_cursorPosition.X < left + renderWidth);
-                bool hitY = (m_cursorPosition.Y >= top && m_cursorPosition.Y < top + m_fontHeight);
+                bool hitY = (m_cursorPosition.Y >= top && m_cursorPosition.Y < top + m_fontHeight.totalHeight);
 
                 if (hitX && hitY)
                 {
@@ -455,7 +471,7 @@ void UIText::CalculateGeometry()
                     float distanceLeft = m_cursorPosition.X - left;
                     float distanceRight = m_cursorPosition.X - (left + renderWidth);
                     // Calculate Y distance for Pythagorean formula
-                    float distanceY = ((m_cursorPosition.Y - top) * m_fontHeight) * ((m_cursorPosition.Y - top) * m_fontHeight);
+                    float distanceY = ((m_cursorPosition.Y - top) * m_fontHeight.totalHeight) * ((m_cursorPosition.Y - top) * m_fontHeight.totalHeight);
 
                     // Calculate real left and right distances using Pythagorean formula (X * X) + Y from above
                     distanceLeft = distanceLeft * distanceLeft + distanceY;
@@ -483,7 +499,7 @@ void UIText::CalculateGeometry()
             }
 
             // Move right by character's width, offset vertex index for next character and increase character index
-            left += renderWidth;
+            left += renderWidth + 1.0f;
             vertexIndex += 4;
             index++;
         }
@@ -491,7 +507,7 @@ void UIText::CalculateGeometry()
         // If cursor position doesn't hit character, check if it hits empty line through Y position
         if (m_locateCursorIndex)
         {
-            if (m_cursorPosition.Y >= top && m_cursorPosition.Y < top + m_fontHeight && line.empty())
+            if (m_cursorPosition.Y >= top && m_cursorPosition.Y < top + m_fontHeight.totalHeight && line.empty())
             {
                 m_cursorIndex = index;
                 m_locateCursorIndex = false;
@@ -505,7 +521,7 @@ void UIText::CalculateGeometry()
         }
 
         // Move to next line and increase character index for invisible \n
-        top += m_fontHeight;
+        top += m_fontHeight.totalHeight;
         index++;
     }
 
@@ -556,7 +572,7 @@ float UIText::CalculateLineWidth(const std::wstring& text) const
     if (m_font == nullptr)
         return 0.0f;
 
-    float scale = m_fontHeight / m_font->GetFontHeight();
+    float scale = m_fontHeight.capHeight / m_font->GetFontHeight().capHeight;
     float width = 0.0f;
 
     for (wchar_t character : text)
@@ -605,23 +621,28 @@ void UIText::SetVertices(unsigned long vertexStartIndex, float left, float top, 
     vertices[vertexStartIndex + 1].diffuse = TDiffuse{ color.r, color.g, color.b };
     vertices[vertexStartIndex + 1].texCoord = TTextureCoordinate{ data.right, data.top };
 
-    vertices[vertexStartIndex + 2].position = TPosition{ left, top + m_fontHeight, 0.0f };
+    vertices[vertexStartIndex + 2].position = TPosition{ left, top + m_fontHeight.totalHeight, 0.0f };
     vertices[vertexStartIndex + 2].diffuse = TDiffuse{ color.r, color.g, color.b };
     vertices[vertexStartIndex + 2].texCoord = TTextureCoordinate{ data.left, data.bottom };
 
-    vertices[vertexStartIndex + 3].position = TPosition{ left + width, top + m_fontHeight, 0.0f };
+    vertices[vertexStartIndex + 3].position = TPosition{ left + width, top + m_fontHeight.totalHeight, 0.0f };
     vertices[vertexStartIndex + 3].diffuse = TDiffuse{ color.r, color.g, color.b };
     vertices[vertexStartIndex + 3].texCoord = TTextureCoordinate{ data.right, data.bottom };
 }
 
 float UIText::GetVerticalStartPosition(size_t lineCount) const
 {
-    float verticalSpace = m_size.Height - lineCount * m_fontHeight;
+    float verticalSpace = (lineCount == 1)
+        ? (m_size.Height - m_fontHeight.capHeight)
+        : (m_size.Height - lineCount * m_fontHeight.totalHeight);
+    float top = m_absolutePosition.Y;
     if (m_verticalAlign == VERTICAL_TEXT_ALIGNMENT_MIDDLE)
-        return m_absolutePosition.Y + (verticalSpace * 0.5f);
+        top += (verticalSpace * 0.5f);
     if (m_verticalAlign == VERTICAL_TEXT_ALIGNMENT_BOTTOM)
-        return m_absolutePosition.Y + verticalSpace;
-    return m_absolutePosition.Y;
+        top += verticalSpace;
+    if (lineCount == 1)
+        top -= m_fontHeight.ascenderHeight;
+    return top;
 }
 
 float UIText::GetHorizontalStartPosition(const std::wstring& line) const

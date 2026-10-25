@@ -160,9 +160,9 @@ protected:
 	Color m_backgroundBorderColor{ 0.0f, 0.0f, 0.0f, 0.0f };
 	float m_borderSize{ 0.0f };
 
-	static XMMATRIX ms_worldMatrix;
-	static XMMATRIX ms_viewMatrix;
-	static XMMATRIX ms_orthoMatrix;
+	static DXMATRIX ms_worldMatrix;
+	static DXMATRIX ms_viewMatrix;
+	static DXMATRIX ms_orthoMatrix;
 
 private:
 	// --- PRIVATE CONSTANTS ---

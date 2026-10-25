@@ -3,13 +3,16 @@
 // --- INCLUDES ---
 #include <string>
 #include <unordered_map>
+#include "ResourceBase.h"
 #include "WindowStyle.h"
 
 // --- CONSTANTS ---
 static const std::wstring TEXTURE_FILE_EXTENSION = L".png";
+static const std::wstring MODEL_FILE_EXTENSION = L".txt";
 static const std::wstring FONT_FILE_EXTENSION = L".txt";
 
 static constexpr double UNUSED_TEXTURE_LIFETIME = 300.0;
+static constexpr double UNUSED_MODEL_LIFETIME = 600.0;
 
 // --- MACROS & DEFINES ---
 #define RESOURCE ResourceManager::Instance()
@@ -23,19 +26,28 @@ static constexpr double UNUSED_TEXTURE_LIFETIME = 300.0;
 // --- FORWARD DECLARATIONS ---
 class Texture;
 class Model;
+class ModelDX;
 class Font;
 
 // --- ENUMS & STRUCTS ---
-enum AssetPool
+enum class AssetPool
 {
 	ASSET_AUTOMATIC,
 	ASSET_STATIC,
 	ASSET_DYNAMIC,
 };
 
-struct TextureResource
+enum class AssetType
 {
-	Texture* texture{ nullptr };
+	ASSET_TYPE_TEXTURE,
+	ASSET_TYPE_MODEL,
+	ASSET_TYPE_MODELDX,
+};
+
+template <typename T>
+struct Resource
+{
+	T* resource{ nullptr };
 	unsigned int referenceCount{ 0 };
 	double timeSinceUnused{ 0.0 };
 };
@@ -58,16 +70,19 @@ public:
 	// --- CLASS API ---
 	void AddStaticDirectory(const std::wstring& directory);
 	void ReleaseTexture(const std::wstring& name);
+	void ReleaseModel(const std::wstring& name);
+	void ReleaseModelDX(const std::wstring& name);
 
 	// --- GETTERS & SETTERS ---
 	Texture* GetTexture(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
-	Model* GetModel(const std::wstring& name);
+	Model* GetModel(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
+	ModelDX* GetModelDX(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
 	Font* GetFont(const std::wstring& name);
 	const WindowStyle& GetWindowStyle(const std::wstring& name);
 
 	// TEMPORARY FOR DEBUG
 	const std::unordered_map<std::wstring, Texture*>& GetStaticTextureMap() const { return m_staticTextureMap; }
-	const std::unordered_map<std::wstring, TextureResource>& GetDynamicTextureMap() const { return m_dynamicTextureMap; }
+	const std::unordered_map<std::wstring, Resource<Texture>>& GetDynamicTextureMap() const { return m_dynamicTextureMap; }
 	const std::vector<std::wstring>& GetUnusedTexturesVector() const { return m_unusedTextures; }
 	const std::unordered_map<std::wstring, Font*>& GetFontMap() const { return m_fontMap; }
 
@@ -89,9 +104,13 @@ private:
 	ResourceManager();
 
 	// --- PRIVATE FUNCTIONS ---
-	void LoadModel(const std::wstring& path);
+	template <typename T>
+	inline T* GetAsset(const std::wstring& name, AssetPool poolMode, AssetType type, std::unordered_map<std::wstring, T*>& staticMap, std::unordered_map<std::wstring, Resource<T>>& dynamicMap, std::vector<std::wstring>& unusedVector);
+	template <typename T>
+	inline void ReleaseAsset(const std::wstring& name, std::unordered_map<std::wstring, Resource<T>>& dynamicMap, std::vector<std::wstring>& unusedVector);
+	template <typename T>
+	inline void UpdateUnusedAsset(const double delta, const double unusedLifetime, std::unordered_map<std::wstring, Resource<T>>& dynamicMap, std::vector<std::wstring>& unusedVector);
 	void LoadWindowStyles();
-
 	void UnloadAssets();
 	void ClearCache();
 	bool CompareStaticDirectories(std::wstring path);
@@ -129,12 +148,17 @@ private:
 
 	// --- PRIVATE COMPONENT DATA ---
 	std::unordered_map<std::wstring, Texture*> m_staticTextureMap;
-	std::unordered_map<std::wstring, TextureResource> m_dynamicTextureMap;
+	std::unordered_map<std::wstring, Resource<Texture>> m_dynamicTextureMap;
 	std::unordered_map<std::wstring, Font*> m_fontMap;
-	std::unordered_map<std::wstring, Model*> m_modelMap;
+	std::unordered_map<std::wstring, Model*> m_staticModelMap;
+	std::unordered_map<std::wstring, Resource<Model>> m_dynamicModelMap;
+	std::unordered_map<std::wstring, ModelDX*> m_staticAnimatedModelMap;
+	std::unordered_map<std::wstring, Resource<ModelDX>> m_dynamicAnimatedModelMap;
 	std::unordered_map<std::wstring, WindowStyle> m_windowStyleMap;
 	std::vector<std::wstring> m_disabledMipmapDirectories;
 	std::vector<std::wstring> m_unusedTextures;
+	std::vector<std::wstring> m_unusedModels;
+	std::vector<std::wstring> m_unusedAnimatedModels;
 
 	WindowStyle m_fallbackWindowStyle;
 
@@ -143,4 +167,151 @@ private:
 	static Texture* ms_fallbackTexture;
 	static Font* ms_fallbackFont;
 };
+
+
+////////////////////////////////////
+////////////////////////////////////
+////////////////////////////////////
+
+template<typename T>
+inline T* ResourceManager::GetAsset(const std::wstring& name, AssetPool poolMode, AssetType type, std::unordered_map<std::wstring, T*>& staticMap, std::unordered_map<std::wstring, Resource<T>>& dynamicMap, std::vector<std::wstring>& unusedVector)
+{
+	// Check if template has correct class type that inherits ResourceBase
+	static_assert(std::is_base_of<ResourceBase, T>::value, "Template type T must inherit from IResource!");
+
+	// Check if the texture is part of static directories
+	bool isStatic = (poolMode == AssetPool::ASSET_AUTOMATIC) ? CompareStaticDirectories(name) : (poolMode == AssetPool::ASSET_STATIC);
+
+	// First try to find if the texture already exists
+	if (isStatic)
+	{
+		auto resource = staticMap.find(name);
+		if (resource != staticMap.end())
+		{
+			return resource->second;
+		}
+	}
+	else
+	{
+		auto resource = dynamicMap.find(name);
+		if (resource != dynamicMap.end())
+		{
+			resource->second.referenceCount++;
+			resource->second.timeSinceUnused = 0.0;
+
+			auto index = std::find(unusedVector.begin(), unusedVector.end(), name);
+			if (index != unusedVector.end())
+			{
+				unusedVector.erase(index);
+			}
+
+			return resource->second.resource;
+		}
+	}
+
+	// Get resource data and file extension based on the template type
+	std::wstring fileExtension = L"";
+	std::wstring fileDirectory = L"";
+	T* fallbackResouce = nullptr;
+	switch (type)
+	{
+	case AssetType::ASSET_TYPE_TEXTURE:
+		fileExtension = TEXTURE_FILE_EXTENSION;
+		fileDirectory = L"textures/";
+		fallbackResouce = reinterpret_cast<T*>(ms_fallbackTexture);
+		break;
+
+	case AssetType::ASSET_TYPE_MODEL:
+		fileExtension = MODEL_FILE_EXTENSION;
+		fileDirectory = L"models/";
+		fallbackResouce = nullptr;
+		break;
+
+	case AssetType::ASSET_TYPE_MODELDX:
+		fileExtension = MODEL_FILE_EXTENSION;
+		fileDirectory = L"models/animated/";
+		fallbackResouce = nullptr;
+		break;
+
+		// Unknown typename, return nothing
+	default:
+		return nullptr;
+	}
+
+	// Second if it isn't found, try to create a new one
+	std::wstring path = L"assets/" + fileDirectory + name + fileExtension;
+	T* resource = new T();
+	if (!resource->Initialize(path, name, !isStatic))
+	{
+		#ifdef _DEBUG
+		//MessageBox(NULL, (L"Resource not loaded: " + path).c_str(), L"Path Error", MB_OK);
+		#endif
+		delete resource;
+		resource = nullptr;
+		return fallbackResouce;
+	}
+
+	// Save the texture
+	if (isStatic)
+	{
+		staticMap[name] = resource;
+	}
+	else
+	{
+		Resource<T> res;
+		res.resource = resource;
+		res.referenceCount = 1;
+		res.timeSinceUnused = 0.0;
+		dynamicMap[name] = res;
+	}
+
+	// Return newly created texture
+	return resource;
+}
+
+template<typename T>
+inline void ResourceManager::ReleaseAsset(const std::wstring& name, std::unordered_map<std::wstring, Resource<T>>& dynamicMap, std::vector<std::wstring>& unusedVector)
+{
+	auto resource = dynamicMap.find(name);
+	if (resource == dynamicMap.end())
+		return;
+
+	if (resource->second.referenceCount > 0)
+	{
+		resource->second.referenceCount--;
+	}
+
+	if (resource->second.referenceCount == 0)
+	{
+		resource->second.timeSinceUnused = 0.0;
+		if (std::find(unusedVector.begin(), unusedVector.end(), resource->second.resource->GetName()) == unusedVector.end())
+		{
+			unusedVector.push_back(resource->second.resource->GetName());
+		}
+	}
+}
+
+template<typename T>
+inline void ResourceManager::UpdateUnusedAsset(const double delta, const double unusedLifetime, std::unordered_map<std::wstring, Resource<T>>& dynamicMap, std::vector<std::wstring>& unusedVector)
+{
+	for (int i = unusedVector.size() - 1; i >= 0; i--)
+	{
+		std::wstring name = unusedVector[i];
+		auto resource = dynamicMap.find(name);
+		if (resource == dynamicMap.end())
+		{
+			unusedVector.erase(unusedVector.begin() + i);
+			continue;
+		}
+
+		resource->second.timeSinceUnused += delta;
+		if (resource->second.timeSinceUnused >= unusedLifetime)
+		{
+			delete resource->second.resource;
+			resource->second.resource = nullptr;
+			dynamicMap.erase(name);
+			unusedVector.erase(unusedVector.begin() + i);
+		}
+	}
+}
 

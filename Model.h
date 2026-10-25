@@ -1,18 +1,17 @@
 #pragma once
 
 #include <d3d11.h>
-#include <DirectXMath.h>
+#include "DXMath.h"
 #include <string>
+#include "ResourceBase.h"
 
-using namespace DirectX;
-
-class Model
+class Model : public ResourceBase
 {
 public:
 	struct VertexType
 	{
-		XMFLOAT3 position;
-		XMFLOAT2 texture;
+		DXFLOAT3 position;
+		DXFLOAT2 texture;
 	};
 
 	struct ModelType
@@ -25,14 +24,13 @@ public:
 	Model();
 	~Model();
 
-	bool Initialize(ID3D11Device* device, LPCWSTR filename, bool writeable = false);
+	bool Initialize(const std::wstring& filePath, const std::wstring& name, bool enableMipmap);
 	bool LoadModel(const wchar_t* filename);
 
 	ID3D11Buffer* GetModelVertexBuffer();
 	ID3D11Buffer* GetModelIndexBuffer();
 	int GetIndexCount();
 	int GetVertexCount();
-	std::wstring GetName();
 
 private:
 	ID3D11Buffer* m_vertexBuffer{ nullptr };
@@ -40,6 +38,5 @@ private:
 	int m_vertexCount{ 0 };
 	int m_indexCount{ 0 };
 	ModelType* m_model{ nullptr };
-	std::wstring m_name{};
 };
 

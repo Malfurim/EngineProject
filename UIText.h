@@ -2,6 +2,7 @@
 
 // --- INCLUDES ---
 #include "UIElement.h"
+#include "FontHeight.h"
 #include <string>
 
 // --- CONSTANTS ---
@@ -72,13 +73,14 @@ public:
 
 	// --- GETTERS & SETTERS ---
 	std::wstring GetText() const { return m_text; }
-	float GetFontHeight() const { return m_fontHeight; }
+	const FontHeight& GetFontHeight() const { return m_fontHeight; }
 	float GetTextWidth() const { return m_textWidth; }
 	int GetMaxLength() const { return m_maxLength; }
 
 	void SetText(std::wstring text);
 	void SetFont(Font* font);
 	void SetFontSize(float size);
+	void SetFontSizeTotal(float size);
 	void SetFontColor(Color color);
 	void SetCursorColor(Color color);
 	void SetTextAlignment(HorizontalTextAlignment horizontalTextAlignment);
@@ -162,7 +164,7 @@ private:
 	Color m_fontColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Color m_cursorColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Font* m_font{ nullptr };
-	float m_fontHeight{ 0.0f };
+	FontHeight m_fontHeight{ 0.0f };
 	float m_textWidth{ 0.0f };
 	int m_maxLength{ 0 };
 	float m_textTop{ 0.0f };

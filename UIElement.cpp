@@ -15,9 +15,9 @@
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	STATIC GLOBAL STATES & DATA								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-XMMATRIX UIElement::ms_worldMatrix = XMMatrixIdentity();
-XMMATRIX UIElement::ms_viewMatrix = XMMatrixMultiply(XMMatrixIdentity(), XMMatrixTranslation(0.0f, 0.0f, 1.0f));
-XMMATRIX UIElement::ms_orthoMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0.0f, SCREEN_NEAR, SCREEN_DEPTH);
+DXMATRIX UIElement::ms_worldMatrix = XMMatrixIdentity();
+DXMATRIX UIElement::ms_viewMatrix = XMMatrixMultiply(XMMatrixIdentity(), XMMatrixTranslation(0.0f, 0.0f, 1.0f));
+DXMATRIX UIElement::ms_orthoMatrix = XMMatrixOrthographicOffCenterLH(0.0f, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0.0f, SCREEN_NEAR, SCREEN_DEPTH);
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//

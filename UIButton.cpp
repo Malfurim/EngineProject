@@ -111,6 +111,12 @@ void UIButton::SetFontSize(float size)
 	m_text->SetFontSize(size);
 }
 
+void UIButton::SetFontSizeTotal(float size)
+{
+	EnsureTextObject();
+	m_text->SetFontSizeTotal(size);
+}
+
 void UIButton::SetFontColor(Color color)
 {
 	EnsureTextObject();

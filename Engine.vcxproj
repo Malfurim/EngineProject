@@ -142,6 +142,10 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Interactive.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelDX.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -167,6 +171,13 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="DebugWindow.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="DXMath.h" />
+    <ClInclude Include="FontHeight.h" />
+    <ClInclude Include="ResourceBase.h" />
+    <ClInclude Include="ModelDX.h">
       <SubType>
       </SubType>
     </ClInclude>

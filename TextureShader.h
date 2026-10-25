@@ -37,7 +37,7 @@ public:
 
     // --- GETTERS & SETTERS ---
     bool SetShaderParameters(ID3D11ShaderResourceView* texture);
-    bool SetShaderParameters(XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix);
+    bool SetShaderParameters(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX projectionMatrix);
 
     // --- STATIC CLASS API ---
     
