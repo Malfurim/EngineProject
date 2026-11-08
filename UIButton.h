@@ -33,7 +33,7 @@ public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	UIButton();
 	UIButton(Position position, Size size);
-	~UIButton();
+	~UIButton() override;
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();

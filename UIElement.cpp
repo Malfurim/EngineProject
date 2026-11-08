@@ -32,6 +32,7 @@ UIElement::UIElement(Position position, Size size) : UIElement(position, size, {
 
 UIElement::UIElement(Position position, Size size, Color backgroundColor)
 {
+	m_ownsBuffers = true;
 	SetRect(position, size);
 	SetBackgroundColor(backgroundColor);
 }

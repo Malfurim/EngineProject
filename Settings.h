@@ -14,9 +14,9 @@
 
 
 // Camera defaults
-#define CAMERA_START_POSITION_X								8.0f
-#define CAMERA_START_POSITION_Y								1.5f
-#define CAMERA_START_POSITION_Z								-14.0f
+#define CAMERA_START_POSITION_X								0.5f
+#define CAMERA_START_POSITION_Y								0.5f
+#define CAMERA_START_POSITION_Z								-10.0f
 
 #define CAMERA_START_ROTATION_X								0.0f
 #define CAMERA_START_ROTATION_Y								0.0f

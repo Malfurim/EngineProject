@@ -1,4 +1,4 @@
-#include "ModelDX.h"
+#include "MeshDX.h"
 
 // --- ADDITIONAL INCLUDES ---
 
@@ -17,27 +17,27 @@
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-ModelDX::ModelDX()
+MeshDX::MeshDX()
 {
 }
 
-ModelDX::~ModelDX()
+MeshDX::~MeshDX()
 {
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CORE FUNCTIONS											//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-bool ModelDX::Initialize(const std::wstring& filePath, const std::wstring& name, bool enableMipmap)
+bool MeshDX::Initialize(const std::wstring& filePath, const std::wstring& name, bool isStatic)
 {
 	return true;
 }
 
-//void ModelDX::Update()
+//void MeshDX::Update()
 //{
 //}
 
-//void ModelDX::Render()
+//void MeshDX::Render()
 //{
 //}
 

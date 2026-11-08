@@ -1,6 +1,8 @@
 #include "Utils.h"
+#include <Windows.h>
 #include <sstream>
 #include <iomanip>
+#include <stringapiset.h>
 
 std::wstring GetFilename(const std::wstring& filePath)
 {
@@ -77,3 +79,13 @@ std::wstring GetFileExtention(const std::wstring& file)
 	for (int i = 0; i < extension.length(); i++) extension[i] = std::tolower(extension[i]);
 	return extension;
 }
+
+std::wstring StringToWString(const std::string& text)
+{
+	if (text.empty()) return L"";
+	int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, text.c_str(), (int)text.size(), NULL, 0);
+	std::wstring wText(sizeNeeded, 0);
+	MultiByteToWideChar(CP_UTF8, 0, text.c_str(), (int)text.size(), &wText[0], sizeNeeded);
+	return wText;
+}
+

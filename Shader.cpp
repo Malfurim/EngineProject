@@ -3,8 +3,12 @@
 // --- ADDITIONAL INCLUDES ---
 #include <d3dcompiler.h>
 #include <fstream>
+#include <string>
+#include <vector>
 #include "Window.h"
 #include "DirectXManager.h"
+#include "VertexStructs.h"
+#include "ShaderVersions.h"
 #include "Deleters.h"
 #include "Utils.h"
 
@@ -17,18 +21,13 @@
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	STATIC GLOBAL STATES & DATA								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-
+unsigned int Shader::ms_setShaderID = 0;
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-Shader::Shader()		// Default constructor for color shader
+Shader::Shader()
 {
-	ID3D10Blob* vertexShaderBuffer = nullptr;
-	ID3D10Blob* pixelShaderBuffer = nullptr;
-	GetShaderBuffers(&vertexShaderBuffer, &pixelShaderBuffer, "shader_color", "ColorVertexShader", "ColorPixelShader", "colorVS", "colorPS");
-	if (vertexShaderBuffer != nullptr && pixelShaderBuffer != nullptr)
-		InitializeShaderComponents(vertexShaderBuffer, pixelShaderBuffer);
 }
 
 Shader::~Shader()
@@ -37,42 +36,61 @@ Shader::~Shader()
 	SAFE_RELEASE(m_layout);
 	SAFE_RELEASE(m_pixelShader);
 	SAFE_RELEASE(m_vertexShader);
+	SAFE_RELEASE(m_samplerState);
+	m_name.clear();
+	m_path.clear();
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CORE FUNCTIONS											//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//bool Shader::Initialize()
-//{
-//	return true;
-//}
+bool Shader::Initialize(const std::wstring& name, unsigned int id, unsigned int layoutFlags)
+{
+	ID3D10Blob* vertexShaderBuffer = nullptr;
+	ID3D10Blob* pixelShaderBuffer = nullptr;
+	if (!GetShaderBuffers(&vertexShaderBuffer, &pixelShaderBuffer, name, "VertexShaderEntry", "PixelShaderEntry", name + L"VS", name + L"PS"))
+		return false;
+	if (vertexShaderBuffer != nullptr && pixelShaderBuffer != nullptr)
+	{
+		m_layoutFlags = layoutFlags;
+		if (!InitializeShaderComponents(vertexShaderBuffer, pixelShaderBuffer))
+			return false;
+	}
+
+	m_name = name;
+	m_id = id;
+	return true;
+}
 
 //void Shader::Update()
 //{
 //}
 
-void Shader::Render(int indexCount)
+void Shader::Render(unsigned int indexCount)
 {
-	// Set the vertex input layout
-	DXDEVICECONTEXT->IASetInputLayout(m_layout);
+	if (ms_setShaderID != m_id)
+	{
+		// Set the vertex input layout
+		DXDEVICECONTEXT->IASetInputLayout(m_layout);
 
-	// Set the vertex and pixel shaders that will be used to render
-	DXDEVICECONTEXT->VSSetShader(m_vertexShader, nullptr, 0);
-	DXDEVICECONTEXT->PSSetShader(m_pixelShader, nullptr, 0);
-	
+		// Set the vertex and pixel shaders that will be used to render
+		DXDEVICECONTEXT->VSSetShader(m_vertexShader, nullptr, 0);
+		DXDEVICECONTEXT->PSSetShader(m_pixelShader, nullptr, 0);
+
+		if (m_layoutFlags & VertexFlag::VERTEX_TEXCOORD)
+		{
+			DXDEVICECONTEXT->PSSetSamplers(0, 1, &m_samplerState);
+		}
+
+		ms_setShaderID = m_id;
+	}
+
 	// Render
 	DXDEVICECONTEXT->DrawIndexed(indexCount, 0, 0);
 }
 
-void Shader::Reset()
-{
-	DXDEVICECONTEXT->IASetInputLayout(nullptr);
-	DXDEVICECONTEXT->VSSetShader(nullptr, nullptr, 0);
-	DXDEVICECONTEXT->PSSetShader(nullptr, nullptr, 0);
-}
-
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PUBLIC VIRTUAL FUNCTIONS								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
@@ -116,21 +134,36 @@ bool Shader::SetShaderParameters(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMA
 	return true;
 }
 
+bool Shader::SetShaderParameters(ID3D11ShaderResourceView* texture)
+{
+	if (texture == nullptr)
+		return false;
+
+	DXDEVICECONTEXT->PSSetShaderResources(0, 1, &texture);
+	return true;
+}
+
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	STATIC CLASS API										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	VIRTUAL FUNCTIONS										//
+//	PROTECTED VIRTUAL FUNCTIONS								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PROTECTED FUNCTIONS										//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+
+
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	PRIVATE FUNCTIONS										//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 bool Shader::InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Blob* pixelShaderBuffer)
 {
 	HRESULT result;
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
-	unsigned int numElements;
-	D3D11_BUFFER_DESC matrixBufferDesc;
-
 	// Create vertex shader buffer
 	result = DXDEVICE->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), nullptr, &m_vertexShader);
 	if (FAILED(result))
@@ -158,6 +191,7 @@ bool Shader::InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Bl
 	SAFE_RELEASE(pixelShaderBuffer);
 
 	// Setup the matrix buffer description
+	D3D11_BUFFER_DESC matrixBufferDesc{};
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
 	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -173,13 +207,36 @@ bool Shader::InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Bl
 		return false;
 	}
 
+	if (m_layoutFlags & VertexFlag::VERTEX_TEXCOORD)
+	{
+		// Create a texture sampler state description.
+		D3D11_SAMPLER_DESC samplerDesc{};
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.MipLODBias = 0.0f;
+		samplerDesc.MaxAnisotropy = 1;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+		samplerDesc.BorderColor[0] = 0;
+		samplerDesc.BorderColor[1] = 0;
+		samplerDesc.BorderColor[2] = 0;
+		samplerDesc.BorderColor[3] = 0;
+		samplerDesc.MinLOD = 0;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		// Create the texture sampler state.
+		result = DXDEVICE->CreateSamplerState(&samplerDesc, &m_samplerState);
+		if (FAILED(result))
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
 
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	PROTECTED FUNCTIONS										//
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-void Shader::GetShaderBuffers(ID3D10Blob** vertexShaderBuffer, ID3D10Blob** pixelShaderBuffer, const std::string& hlslFilename, const char* shaderVertexFunctionEntry, const char* shaderPixelFunctionEntry, const char* shaderVertexName, const char* shaderPixelName)
+bool Shader::GetShaderBuffers(ID3D10Blob** vertexShaderBuffer, ID3D10Blob** pixelShaderBuffer, const std::wstring& hlslFilename, const char* shaderVertexFunctionEntry, const char* shaderPixelFunctionEntry, const std::wstring& shaderVertexName, const std::wstring& shaderPixelName)
 {
 	*vertexShaderBuffer = LoadCompiledShader(shaderVertexName);
 	*pixelShaderBuffer = LoadCompiledShader(shaderPixelName);
@@ -188,36 +245,43 @@ void Shader::GetShaderBuffers(ID3D10Blob** vertexShaderBuffer, ID3D10Blob** pixe
 	{
 		std::string shaderCode = LoadShaderSourceFile(hlslFilename);
 		if (shaderCode.empty())
-			return;
+			return false;
 
 		if (*vertexShaderBuffer == nullptr)
 		{
-			*vertexShaderBuffer = CompileShader(shaderCode.c_str(), shaderCode.length(), shaderVertexFunctionEntry, "vs_5_0");
-			if (vertexShaderBuffer != nullptr)
+			*vertexShaderBuffer = CompileShader(shaderCode, shaderVertexFunctionEntry, "vs_5_0");
+			if (*vertexShaderBuffer != nullptr)
 				SaveCompiledShader(*vertexShaderBuffer, shaderVertexName);
 		}
 		if (*pixelShaderBuffer == nullptr)
 		{
-			*pixelShaderBuffer = CompileShader(shaderCode.c_str(), shaderCode.length(), shaderPixelFunctionEntry, "ps_5_0");
-			if (pixelShaderBuffer != nullptr)
+			*pixelShaderBuffer = CompileShader(shaderCode.c_str(), shaderPixelFunctionEntry, "ps_5_0");
+			if (*pixelShaderBuffer != nullptr)
 				SaveCompiledShader(*pixelShaderBuffer, shaderPixelName);
 		}
 	}
+
+	return true;
 }
 
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-//	PRIVATE FUNCTIONS										//
-// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-ID3D10Blob* Shader::LoadCompiledShader(const std::string& shaderName)
+ID3D10Blob* Shader::LoadCompiledShader(const std::wstring& name)
 {
-	std::string shaderPath = "assets/shaders/" + shaderName + ".cso";
+	std::wstring shaderPath = L"assets/shaders/" + name + L".cso";
 	std::ifstream file(shaderPath, std::ios::in | std::ios::binary);
 	if (file.fail())
 		return nullptr;
 
-	uintmax_t size = GetFileSize(shaderPath);
+	unsigned int version = 0;
+	file.read(reinterpret_cast<char*>(&version), sizeof(version));
+	if (version != ShaderVersion::VERSION)
+	{
+		file.close();
+		DeleteFile(shaderPath.c_str());
+		return nullptr;
+	}
+
+	uintmax_t size = GetFileSize(shaderPath) - sizeof(unsigned int);
 	char* shaderCode = new char[size];
-	file.seekg(0, std::ios::beg);
 	file.read(shaderCode, size);
 	file.close();
 
@@ -240,25 +304,13 @@ ID3D10Blob* Shader::LoadCompiledShader(const std::string& shaderName)
 	return buffer;
 }
 
-void Shader::SaveCompiledShader(ID3D10Blob* shaderBuffer, std::string shaderFilename)
-{
-	char* bufferData = (char*)shaderBuffer->GetBufferPointer();
-	std::string dir = "assets/shaders/";
-	CreateDirectoryA(dir.c_str(), NULL);
-
-	std::ofstream file(dir + shaderFilename + ".cso", std::ios::out | std::ios::binary);
-	file.write(bufferData, shaderBuffer->GetBufferSize());
-	file.close();
-	bufferData = nullptr;
-}
-
-ID3D10Blob* Shader::CompileShader(const char* shaderCode, SIZE_T shaderLength, const char* entryPoint, const char* targetVersion)
+ID3D10Blob* Shader::CompileShader(const std::string& shaderCode, const char* entryPoint, const char* targetVersion)
 {
 	HRESULT result;
 	ID3D10Blob* errorMessage = nullptr;
 	ID3D10Blob* shaderBuffer = nullptr;
 
-	result = D3DCompile(shaderCode, shaderLength, nullptr, nullptr, nullptr, entryPoint, targetVersion, D3D10_SHADER_ENABLE_STRICTNESS, 0, &shaderBuffer, &errorMessage);
+	result = D3DCompile(shaderCode.c_str(), shaderCode.length(), nullptr, nullptr, nullptr, entryPoint, targetVersion, D3D10_SHADER_ENABLE_STRICTNESS, 0, &shaderBuffer, &errorMessage);
 	if (FAILED(result))
 	{
 		if (errorMessage)
@@ -274,31 +326,60 @@ ID3D10Blob* Shader::CompileShader(const char* shaderCode, SIZE_T shaderLength, c
 	return shaderBuffer;
 }
 
+void Shader::SaveCompiledShader(ID3D10Blob* shaderBuffer, const std::wstring& shaderFilename)
+{
+	char* bufferData = (char*)shaderBuffer->GetBufferPointer();
+	std::wstring dir = L"assets/shaders/";
+	CreateDirectory(dir.c_str(), NULL);
+
+	std::ofstream file(dir + shaderFilename + L".cso", std::ios::out | std::ios::binary);
+	unsigned int version = ShaderVersion::VERSION;
+	file.write(reinterpret_cast<const char*>(&version), sizeof(version));
+	file.write(bufferData, shaderBuffer->GetBufferSize());
+	file.close();
+	bufferData = nullptr;
+}
+
 bool Shader::InitializeLayout(ID3D10Blob* vertexShaderBuffer)
 {
-	// Setup the layout of the data that goes into the shader
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
-	polygonLayout[0].SemanticName = "POSITION";
-	polygonLayout[0].SemanticIndex = 0;
-	polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	polygonLayout[0].InputSlot = 0;
-	polygonLayout[0].AlignedByteOffset = 0;
-	polygonLayout[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	polygonLayout[0].InstanceDataStepRate = 0;
+	std::vector<D3D11_INPUT_ELEMENT_DESC> polygonLayout;
+	unsigned int currentOffset = 0;
 
-	polygonLayout[1].SemanticName = "COLOR";
-	polygonLayout[1].SemanticIndex = 0;
-	polygonLayout[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	polygonLayout[1].InputSlot = 0;
-	polygonLayout[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	polygonLayout[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	polygonLayout[1].InstanceDataStepRate = 0;
+	if (m_layoutFlags & VertexFlag::VERTEX_POSITION)
+	{
+		polygonLayout.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		currentOffset += sizeof(TPosition); 
+	}
 
-	unsigned int numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
+	if (m_layoutFlags & VertexFlag::VERTEX_COLOR)
+	{
+		polygonLayout.push_back({ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		currentOffset += sizeof(TColor);
+	}
 
-	// Create the vertex input layout
+	if (m_layoutFlags & VertexFlag::VERTEX_DIFFUSE)
+	{
+		polygonLayout.push_back({ "DIFFUSE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		currentOffset += sizeof(TDiffuse);
+	}
+
+	if (m_layoutFlags & VertexFlag::VERTEX_NORMAL)
+	{
+		polygonLayout.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		currentOffset += sizeof(TNormal);
+	}
+
+	if (m_layoutFlags & VertexFlag::VERTEX_TEXCOORD)
+	{
+		polygonLayout.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		currentOffset += sizeof(TTextureCoordinate); 
+	}
+	
+	if (polygonLayout.empty())
+		return false;
+
 	HRESULT result;
-	result = DXDEVICE->CreateInputLayout(polygonLayout, numElements, vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_layout);
+	result = DXDEVICE->CreateInputLayout(polygonLayout.data(), static_cast<unsigned int>(polygonLayout.size()), vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_layout);
 	if (FAILED(result))
 	{
 		return false;
@@ -332,9 +413,9 @@ void Shader::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWS
 	MessageBox(hwnd, L"Error compiling shader. Check shader-error.txt for message.", shaderFileName, MB_OK);
 }
 
-std::string Shader::LoadShaderSourceFile(const std::string& filename)
+std::string Shader::LoadShaderSourceFile(const std::wstring& filename)
 {
-	std::string path = "assets/shaders/" + filename + ".hlsl";
+	std::wstring path = L"assets/shaders/" + filename + L".hlsl";
 	std::ifstream file(path);
 
 	if (file.fail())
@@ -345,7 +426,7 @@ std::string Shader::LoadShaderSourceFile(const std::string& filename)
 
 	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	file.close();
-
+	
 	return content;
 }
 

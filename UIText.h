@@ -54,13 +54,12 @@ public:
 	UIText();
 	UIText(Position position, Size size);
 	UIText(Position position, Size size, Font* font);
-	~UIText();
+	~UIText() override;
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
 	void Update() override;
 	void Render() override;
-	static void Shutdown();
 
 	// --- VIRTUAL FUNCTIONS ---
 	void OnCharInput(wchar_t character) override;
@@ -180,6 +179,6 @@ private:
 	std::wstring m_text;
 
 	// --- STATIC GLOBAL STATES ---
-	static FontShader* ms_textShader;
+	static Shader* ms_textShader;
 };
 

@@ -68,7 +68,7 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 	IDXGIOutput* adapterOutput;
 	unsigned int numModes, i, numerator{ 0 }, denominator{ 1 };
 	unsigned long long stringLength;
-	DXGI_MODE_DESC* displayModeList;
+	DXGI_MODE_DESC* displayMeshist;
 	DXGI_ADAPTER_DESC adapterDesc;
 	int error;
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -107,12 +107,12 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 		return false;
 
 	// Create a list to hold all the possible display modes for this monitor/video card combination
-	displayModeList = new DXGI_MODE_DESC[numModes];
-	if (!displayModeList)
+	displayMeshist = new DXGI_MODE_DESC[numModes];
+	if (!displayMeshist)
 		return false;
 
 	// Fill the display mode list structures
-	result = adapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList);
+	result = adapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, displayMeshist);
 	if (FAILED(result))
 		return false;
 
@@ -120,12 +120,12 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 	// When a match is found store the numerator and denominator of the refresh rate for that monitor
 	for (i = 0; i < numModes; i++)
 	{
-		if (displayModeList[i].Width == (unsigned int)screenWidth)
+		if (displayMeshist[i].Width == (unsigned int)screenWidth)
 		{
-			if (displayModeList[i].Height == (unsigned int)screenHeight)
+			if (displayMeshist[i].Height == (unsigned int)screenHeight)
 			{
-				numerator = displayModeList[i].RefreshRate.Numerator;
-				denominator = displayModeList[i].RefreshRate.Denominator;
+				numerator = displayMeshist[i].RefreshRate.Numerator;
+				denominator = displayMeshist[i].RefreshRate.Denominator;
 				m_refreshRate = 1.0 / ((double)numerator / (double)denominator);
 			}
 		}
@@ -145,8 +145,8 @@ bool DirectXManager::Initialize(int screenWidth, int screenHeight, bool vsync, H
 		return false;
 
 	// Release the display mode list
-	delete[] displayModeList;
-	displayModeList = 0;
+	delete[] displayMeshist;
+	displayMeshist = 0;
 
 	// Release the adapter output
 	adapterOutput->Release();

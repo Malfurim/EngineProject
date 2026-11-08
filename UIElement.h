@@ -68,7 +68,7 @@ class UIElement : public GraphicBase
 // - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
-	virtual ~UIElement();
+	~UIElement() override;
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();

@@ -8,3 +8,4 @@ uintmax_t GetFileSize(const std::string& filePath);
 int CountOf(const std::wstring& text, wchar_t character);
 std::wstring ToWStringWithPrecision(float value, int precision);
 std::wstring GetFileExtension(const std::wstring& file);
+std::wstring StringToWString(const std::string& text);

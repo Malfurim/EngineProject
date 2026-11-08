@@ -26,15 +26,18 @@ Shader* GraphicBase::ms_shader = nullptr;
 GraphicBase::GraphicBase()
 {
 	if (ms_shader == nullptr)
-		ms_shader = new Shader();
+		ms_shader = SHADER(L"color");
 }
 
 GraphicBase::~GraphicBase()
 {
-	SAFE_DELETE_ARRAY(m_vertices);
-	SAFE_DELETE_ARRAY(m_indices);
-	SAFE_RELEASE(m_vertexBuffer);
-	SAFE_RELEASE(m_indexBuffer);
+	if (m_ownsBuffers)
+	{
+		SAFE_DELETE_ARRAY(m_vertices);
+		SAFE_DELETE_ARRAY(m_indices);
+		SAFE_RELEASE(m_vertexBuffer);
+		SAFE_RELEASE(m_indexBuffer);
+	}
 	SAFE_DELETE_ARRAY(m_verticesBackground);
 	SAFE_RELEASE(m_vertexBufferBackground);
 }
@@ -69,12 +72,6 @@ void GraphicBase::Render(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX pro
 
 	ms_shader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
 	ms_shader->Render(m_indexCount);
-	ms_shader->Reset();
-}
-
-void GraphicBase::Shutdown()
-{
-	SAFE_DELETE(ms_shader);
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //

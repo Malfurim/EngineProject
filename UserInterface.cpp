@@ -191,6 +191,16 @@ bool UserInterface::MouseEvent(MouseButton mouseButton, InputEventType eventType
 
 	Interactive::RemoveFocus(FocusType::FOCUS_TYPE_UI);
 
+	if (mouseButton == MouseButton::MOUSE_BUTTON_RIGHT && eventType == InputEventType::INPUT_EVENT_CLICK)
+	{
+		Position mouseDelta = MOUSEDELTA;
+		if (mouseDelta.X != 0.0f || mouseDelta.Y != 0.0f)
+		{
+			// active camera set rotation based on mouse move and move mouse back to origin
+			//SetPosition(GetPosition() + mouseDelta);
+		}
+	}
+
 	return false;
 }
 

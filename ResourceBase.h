@@ -7,12 +7,12 @@ public:
 	virtual ~ResourceBase() = default;
 	std::wstring GetName() const { return m_name; }
 	std::wstring GetPath() const { return m_path; }
-	int GetID() const { return m_id; }
+	unsigned int GetID() const { return m_id; }
 
 protected:
 	ResourceBase() = default;
 	std::wstring m_name{ L"" };
 	std::wstring m_path{ L"" };
-	int m_id{ 0 };
+	unsigned int m_id{ 0 };
 };
 

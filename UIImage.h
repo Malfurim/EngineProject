@@ -25,13 +25,12 @@ public:
 	UIImage();
 	UIImage(Position position, Size size);
 	UIImage(Position position, Size size, Color backgroundColor);
-	~UIImage();
+	~UIImage() override;
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
 	void Update() override;
 	void Render() override;
-	static void Shutdown();
 
 	// --- VIRTUAL FUNCTIONS ---
 
@@ -107,6 +106,6 @@ private:
 	double m_frameInterval{ 0.0 };
 
 	// --- STATIC GLOBAL STATES ---
-	static TextureShader* ms_imageShader;
+	static Shader* ms_imageShader;
 };
 

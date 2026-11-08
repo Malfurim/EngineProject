@@ -24,7 +24,7 @@ public:
 	UIPanel();
 	UIPanel(Position position, Size size);
 	UIPanel(Position position, Size size, Color backgroundColor);
-	~UIPanel();
+	~UIPanel() override;
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();

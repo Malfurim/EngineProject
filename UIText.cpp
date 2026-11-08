@@ -2,6 +2,7 @@
 
 // --- ADDITIONAL INCLUDES ---
 #include <sstream>
+#include "ResourceManager.h"
 #include "DirectXManager.h"
 #include "TimerManager.h"
 #include "FontShader.h"
@@ -18,7 +19,7 @@
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	STATIC GLOBAL STATES & DATA								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-FontShader* UIText::ms_textShader = nullptr;
+Shader* UIText::ms_textShader = nullptr;
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
@@ -103,12 +104,6 @@ void UIText::Render()
     ms_textShader->SetShaderParameters(m_font->GetTexture());
     ms_textShader->SetShaderParameters(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
     ms_textShader->Render(m_indexCount);
-    ms_textShader->Reset();
-}
-
-void UIText::Shutdown()
-{
-    SAFE_DELETE(ms_textShader);
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -564,7 +559,7 @@ void UIText::CalculateGeometry()
 void UIText::ConfirmShader()
 {
     if (ms_textShader == nullptr)
-        ms_textShader = new FontShader();
+        ms_textShader = SHADER(L"font");
 }
 
 float UIText::CalculateLineWidth(const std::wstring& text) const
@@ -614,19 +609,19 @@ void UIText::SetVertices(unsigned long vertexStartIndex, float left, float top, 
     SPDTVertex* vertices = (SPDTVertex*)m_vertices;
 
     vertices[vertexStartIndex + 0].position = TPosition{ left, top, 0.0f };
-    vertices[vertexStartIndex + 0].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 0].diffuse = TDiffuse{ color.r, color.g, color.b, color.a };
     vertices[vertexStartIndex + 0].texCoord = TTextureCoordinate{ data.left, data.top };
 
     vertices[vertexStartIndex + 1].position = TPosition{ left + width, top, 0.0f };
-    vertices[vertexStartIndex + 1].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 1].diffuse = TDiffuse{ color.r, color.g, color.b, color.a };
     vertices[vertexStartIndex + 1].texCoord = TTextureCoordinate{ data.right, data.top };
 
     vertices[vertexStartIndex + 2].position = TPosition{ left, top + m_fontHeight.totalHeight, 0.0f };
-    vertices[vertexStartIndex + 2].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 2].diffuse = TDiffuse{ color.r, color.g, color.b, color.a };
     vertices[vertexStartIndex + 2].texCoord = TTextureCoordinate{ data.left, data.bottom };
 
     vertices[vertexStartIndex + 3].position = TPosition{ left + width, top + m_fontHeight.totalHeight, 0.0f };
-    vertices[vertexStartIndex + 3].diffuse = TDiffuse{ color.r, color.g, color.b };
+    vertices[vertexStartIndex + 3].diffuse = TDiffuse{ color.r, color.g, color.b, color.a };
     vertices[vertexStartIndex + 3].texCoord = TTextureCoordinate{ data.right, data.bottom };
 }
 

@@ -1,18 +1,24 @@
 #include "ResourceManager.h"
 
 // --- ADDITIONAL INCLUDES ---
+#ifdef _DEBUG
+#include <Windows.h>
+#endif
+
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include "Window.h"
 #include "DirectXManager.h"
 #include "TimerManager.h"
 #include "Texture.h"
-#include "Model.h"
+#include "Mesh.h"
+#include "Material.h"
 #include "Font.h"
+#include "Shader.h"
+#include "Parser.h"
 #include "Utils.h"
 #include "Deleters.h"
 
-#include "ModelDX.h"
+#include "MeshDX.h"
 
 // --- MACROS & DEFINES ---
 
@@ -76,8 +82,9 @@ void ResourceManager::Update()
 	double delta = DELTA;
 	
 	UpdateUnusedAsset(delta, UNUSED_TEXTURE_LIFETIME, m_dynamicTextureMap, m_unusedTextures);
-	UpdateUnusedAsset(delta, UNUSED_MODEL_LIFETIME, m_dynamicModelMap, m_unusedModels);
-	UpdateUnusedAsset(delta, UNUSED_MODEL_LIFETIME, m_dynamicAnimatedModelMap, m_unusedAnimatedModels);
+	UpdateUnusedAsset(delta, UNUSED_MESH_LIFETIME, m_dynamicMeshMap, m_unusedMeshs);
+	UpdateUnusedAsset(delta, UNUSED_MESH_LIFETIME, m_dynamicAnimatedMeshMap, m_unusedAnimatedMeshs);
+	UpdateUnusedAsset(delta, UNUSED_MATERIAL_LIFETIME, m_dynamicMaterialMap, m_unusedMaterials);
 }
 
 //void ResourceManager::Render()
@@ -107,14 +114,31 @@ void ResourceManager::ReleaseTexture(const std::wstring& name)
 	ReleaseAsset(name, m_dynamicTextureMap, m_unusedTextures);
 }
 
-void ResourceManager::ReleaseModel(const std::wstring& name)
+void ResourceManager::ReleaseMesh(const std::wstring& name)
 {
-	ReleaseAsset(name, m_dynamicModelMap, m_unusedModels);
+	ReleaseAsset(name, m_dynamicMeshMap, m_unusedMeshs);
 }
 
-void ResourceManager::ReleaseModelDX(const std::wstring& name)
+void ResourceManager::ReleaseMeshDX(const std::wstring& name)
 {
-	ReleaseAsset(name, m_dynamicAnimatedModelMap, m_unusedAnimatedModels);
+	ReleaseAsset(name, m_dynamicAnimatedMeshMap, m_unusedAnimatedMeshs);
+}
+
+void ResourceManager::ReleaseMaterial(const std::wstring& name)
+{
+	ReleaseAsset(name, m_dynamicMaterialMap, m_unusedMaterials);
+}
+
+void ResourceManager::LoadUIShaders()
+{
+	GetShader(L"color", SPCVertex::VertexLayout);
+	GetShader(L"texture", SPTVertex::VertexLayout);
+	GetShader(L"font", SPDTVertex::VertexLayout);
+}
+
+void ResourceManager::LoadWorldShaders()
+{
+	GetShader(L"basic3Dlight", SPDNTVertex::VertexLayout);
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -125,14 +149,19 @@ Texture* ResourceManager::GetTexture(const std::wstring& name, AssetPool poolMod
 	return GetAsset(name, poolMode, AssetType::ASSET_TYPE_TEXTURE, m_staticTextureMap, m_dynamicTextureMap, m_unusedTextures);
 }
 
-Model* ResourceManager::GetModel(const std::wstring& name, AssetPool poolMode)
+Mesh* ResourceManager::GetMesh(const std::wstring& name, AssetPool poolMode)
 {
-	return GetAsset(name, poolMode, AssetType::ASSET_TYPE_MODEL, m_staticModelMap, m_dynamicModelMap, m_unusedModels);
+	return GetAsset(name, poolMode, AssetType::ASSET_TYPE_MESH, m_staticMeshMap, m_dynamicMeshMap, m_unusedMeshs);
 }
 
-ModelDX* ResourceManager::GetModelDX(const std::wstring& name, AssetPool poolMode)
+MeshDX* ResourceManager::GetMeshDX(const std::wstring& name, AssetPool poolMode)
 {
-	return GetAsset(name, poolMode, AssetType::ASSET_TYPE_MODELDX, m_staticAnimatedModelMap, m_dynamicAnimatedModelMap, m_unusedAnimatedModels);
+	return GetAsset(name, poolMode, AssetType::ASSET_TYPE_MESHDX, m_staticAnimatedMeshMap, m_dynamicAnimatedMeshMap, m_unusedAnimatedMeshs);
+}
+
+Material* ResourceManager::GetMaterial(const std::wstring& name, AssetPool poolMode)
+{
+	return GetAsset(name, poolMode, AssetType::ASSET_TYPE_MATERIAL, m_staticMaterialMap, m_dynamicMaterialMap, m_unusedMaterials);
 }
 
 Font* ResourceManager::GetFont(const std::wstring& name)
@@ -157,6 +186,35 @@ Font* ResourceManager::GetFont(const std::wstring& name)
 
 	m_fontMap[name] = font;
 	return font;
+}
+
+Shader* ResourceManager::GetShader(const std::wstring& name, unsigned int layoutFlags)
+{
+	if (name == L"")
+		return nullptr;
+
+	auto resource = m_shaderMap.find(name);
+	if (resource != m_shaderMap.end())
+	{
+		return resource->second;
+	}
+
+	if (layoutFlags == 0)
+		return nullptr;
+
+	Shader* shader = new Shader();
+	if (!shader->Initialize(name, m_shaderMap.size() + 1, layoutFlags))
+	{
+		#ifdef _DEBUG
+		MessageBox(NULL, (L"Shader not loaded: " + name).c_str(), L"Path Error", MB_OK);
+		#endif
+		delete shader;
+		shader = nullptr;
+		return nullptr;
+	}
+
+	m_shaderMap[name] = shader;
+	return shader;
 }
 
 const WindowStyle& ResourceManager::GetWindowStyle(const std::wstring& name)
@@ -195,30 +253,11 @@ ResourceManager* ResourceManager::Instance()
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 void ResourceManager::LoadWindowStyles()
 {
-	std::ifstream file("assets/styles.json");
-	if (!file.is_open())
-	{
-		#ifdef _DEBUG
-		MessageBox(NULL, L"File assets/styles.json doesn't exist", L"ERROR", MB_OK);
-		#endif
-		return;
-	}
-
 	nlohmann::json data;
-	try
+	if (!Parser::LoadJsonFile(L"assets/styles.json", data))
 	{
-		file >> data;	// Load method from nlohmann library
-	}
-	catch (const nlohmann::json::parse_error& e)
-	{
-		#ifdef _DEBUG
-		std::string errStr = "Syntax error in JSON: " + std::string(e.what());
-		MessageBoxA(NULL, errStr.c_str(), "JSON Parse Error", MB_OK);
-		#endif
-		file.close();
 		return;
 	}
-	file.close();
 
 	for (auto resource = data.begin(); resource != data.end(); resource++)
 	{
@@ -276,29 +315,41 @@ void ResourceManager::LoadWindowStyles()
 
 void ResourceManager::UnloadAssets()
 {
-	for (auto& resource : m_staticModelMap)
+	for (auto& resource : m_staticMeshMap)
 	{
 		SAFE_DELETE(resource.second);
 	}
-	m_staticModelMap.clear();
+	m_staticMeshMap.clear();
 
-	for (auto& resource : m_dynamicModelMap)
+	for (auto& resource : m_dynamicMeshMap)
 	{
 		SAFE_DELETE(resource.second.resource);
 	}
-	m_dynamicModelMap.clear();
+	m_dynamicMeshMap.clear();
 
-	for (auto& resource : m_staticAnimatedModelMap)
+	for (auto& resource : m_staticAnimatedMeshMap)
 	{
 		SAFE_DELETE(resource.second);
 	}
-	m_staticAnimatedModelMap.clear();
+	m_staticAnimatedMeshMap.clear();
 
-	for (auto& resource : m_dynamicAnimatedModelMap)
+	for (auto& resource : m_dynamicAnimatedMeshMap)
 	{
 		SAFE_DELETE(resource.second.resource);
 	}
-	m_dynamicAnimatedModelMap.clear();
+	m_dynamicAnimatedMeshMap.clear();
+
+	for (auto& resource : m_staticMaterialMap)
+	{
+		SAFE_DELETE(resource.second);
+	}
+	m_staticMaterialMap.clear();
+
+	for (auto& resource : m_dynamicMaterialMap)
+	{
+		SAFE_DELETE(resource.second.resource);
+	}
+	m_dynamicMaterialMap.clear();
 
 	for (auto& resource : m_staticTextureMap)
 	{
@@ -322,6 +373,12 @@ void ResourceManager::ClearCache()
 		SAFE_DELETE(resource.second);
 	}
 	m_fontMap.clear();
+
+	for (auto& resource : m_shaderMap)
+	{
+		SAFE_DELETE(resource.second);
+	}
+	m_shaderMap.clear();
 }
 
 bool ResourceManager::CompareStaticDirectories(std::wstring path)

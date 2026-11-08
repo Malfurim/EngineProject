@@ -12,6 +12,7 @@ using DXVECTOR = DirectX::XMVECTOR;
 // Functions
 using DirectX::XMMatrixIdentity;
 using DirectX::XMMatrixScaling;
+using DirectX::XMMatrixMultiply;
 using DirectX::XMMatrixRotationRollPitchYaw;
 using DirectX::XMMatrixTranslation;
 using DirectX::XMMatrixLookAtLH;
@@ -20,3 +21,4 @@ using DirectX::XMMatrixOrthographicLH;
 using DirectX::XMMatrixOrthographicOffCenterLH;
 using DirectX::XMMatrixTranspose;
 using DirectX::XMVectorAdd;
+

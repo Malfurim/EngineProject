@@ -44,7 +44,7 @@ public:
 
 	// --- GETTERS & SETTERS ---
 	std::wstring GetName() const { return m_name; }
-	ID3D11ShaderResourceView* GetTexture() const { return m_texture->GetTexture(); }
+	ID3D11ShaderResourceView* GetTexture() const { return m_texture->GetShaderResource(); }
 	CharacterData GetCharacter(wchar_t character);
 	const FontHeight& GetFontHeight() const { return m_fontHeight; }
 

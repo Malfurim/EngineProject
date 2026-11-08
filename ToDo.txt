@@ -1,9 +1,9 @@
 
 	To-Do List
 
-1)		*	Create Entity class containing Model, Texture and Shader + entity position and rotation
+1)		*	Create Entity class containing Mesh, Texture and Shader + entity position and rotation
 2)		**	Create Entity Manager to hold all entities
-3)			Polish Model class and Shader class
+3)			Polish Mesh class and Shader class
 4)			Alter Camera class to hold vectors for movement and functions for easier movement and rotation
 5)			Change Input to DirectX Input
 6)		**	Test drawing more blocks

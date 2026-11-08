@@ -17,6 +17,7 @@ class Camera;
 class UIPanel;
 class UIText;
 class UIImage;
+class WorldObject;
 
 class Application
 {
@@ -105,7 +106,7 @@ private:
 	RenderMatrix m_renderMatrix{};
 	Camera* m_camera{ nullptr };
 
-	UIImage* m_testIMG{ nullptr };
+	WorldObject* m_testObject{ nullptr };
 
 	// --- STATIC GLOBAL STATES ---
 	static Application* m_instance;

@@ -39,7 +39,7 @@ class UIWindow : public UIPanel
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	UIWindow(Position position, Size size, const std::wstring& titleText, bool openAtInitialPosition, WindowCloseButton closeButtonType, const WindowStyle& windowStyle, WindowDrag draggable = WindowDrag::DRAG_TITLE);
-	~UIWindow();
+	~UIWindow() override;
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();

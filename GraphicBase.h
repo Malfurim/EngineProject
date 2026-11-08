@@ -2,6 +2,7 @@
 
 // --- INCLUDES ---
 #include "DXMath.h"
+#include "VertexStructs.h"
 #include "Interactive.h"
 #include "Color.h"
 
@@ -9,12 +10,7 @@
 
 
 // --- MACROS & DEFINES ---
-#define VERTEXSTRUCTSIZE sizeof(SPDNT2Vertex)
-typedef DXFLOAT3 TPosition;
-typedef DXFLOAT4 TColor;
-typedef DXFLOAT3 TNormal;
-typedef DXFLOAT3 TDiffuse;
-typedef DXFLOAT2 TTextureCoordinate;
+
 
 // --- ENUMS & STRUCTS ---
 enum BackgroundType
@@ -25,69 +21,36 @@ enum BackgroundType
 	BACKGROUND_BORDER_ONLY,
 };
 
-enum UpdateFlag : unsigned int
-{
-	UPDATE_NONE					= 0,
-	UPDATE_GEOMETRY				= 1 << 0,
-	UPDATE_COLORS				= 1 << 1,
-	UPDATE_TEXT					= 1 << 2,
-	UPDATE_POSITION				= 1 << 3,
-	UPDATE_BACKGROUND_STATE		= 1 << 4,
-
-	UPDATE_ALL = UPDATE_GEOMETRY | UPDATE_COLORS | UPDATE_TEXT | UPDATE_POSITION | UPDATE_BACKGROUND_STATE
-};
-
-struct SPVertex
-{
-	TPosition position{ 0.0f, 0.0f, 0.0f };
-};
-
-struct SPCVertex
-{
-	TPosition position{ 0.0f, 0.0f, 0.0f };
-	TColor color{ 0.0f, 0.0f, 0.0f, 0.0f };
-};
-
-struct SPTVertex
-{
-	TPosition position{ 0.0f, 0.0f, 0.0f };
-	TTextureCoordinate texCoord{ 0.0f, 0.0f };
-};
-
-struct SPDTVertex
-{
-	TPosition position{ 0.0f, 0.0f, 0.0f };
-	TDiffuse diffuse{ 0.0f, 0.0f, 0.0f };
-	TTextureCoordinate texCoord{ 0.0f, 0.0f };
-};
-
-struct SPDNT2Vertex
-{
-	TPosition position{ 0.0f, 0.0f, 0.0f };
-	TDiffuse diffuse{ 0.0f, 0.0f, 0.0f };
-	TNormal normal{ 0.0f, 0.0f, 0.0f };
-	TTextureCoordinate texCoord{ 0.0f, 0.0f };
-	TTextureCoordinate texCoord2{ 0.0f, 0.0f };
-};
-
 // --- FORWARD DECLARATIONS ---
 class Shader;
 struct ID3D11Buffer;
 
 class GraphicBase : public Interactive
 {
+protected:
+	enum UpdateFlag : unsigned int
+	{
+		UPDATE_NONE = 0,
+		UPDATE_GEOMETRY = 1 << 0,
+		UPDATE_COLORS = 1 << 1,
+		UPDATE_TEXT = 1 << 2,
+		UPDATE_POSITION = 1 << 3,
+		UPDATE_BACKGROUND_STATE = 1 << 4,
+
+		UPDATE_ALL = UPDATE_GEOMETRY | UPDATE_COLORS | UPDATE_TEXT | UPDATE_POSITION | UPDATE_BACKGROUND_STATE
+	};
+
 // - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
-	virtual ~GraphicBase();
+	~GraphicBase() override;
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();
 	virtual void Update();
 	virtual void Render(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX projectionMatrix);
-	static void Shutdown();
 
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PUBLIC VIRTUAL FUNCTIONS ---
 
 
 	// --- CLASS API ---
@@ -107,7 +70,7 @@ protected:
 	// --- CONSTRUCTORS ---
 	GraphicBase();
 
-	// --- VIRTUAL FUNCTIONS ---
+	// --- PROTECTED VIRTUAL FUNCTIONS ---
 
 
 	// --- PROTECTED FUNCTIONS ---
@@ -144,6 +107,7 @@ protected:
 
 	// --- INTERNAL COMPONENT STATES ---
 	bool m_dynamic{ false };
+	bool m_ownsBuffers{ true };
 	unsigned int m_updateFlags{ UpdateFlag::UPDATE_NONE };
 
 	// --- INTERNAL COMPONENT DATA ---

@@ -22,7 +22,7 @@ class Texture : public ResourceBase
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	Texture();
-	~Texture();
+	~Texture() override;
 	
 	// --- CORE FUNCTIONS ---
 	bool Initialize(const std::wstring& filePath, const std::wstring& name, bool enableMipmap);
@@ -36,7 +36,8 @@ public:
 
 
 	// --- GETTERS & SETTERS ---
-	ID3D11ShaderResourceView* GetTexture() const { return m_texture; }
+	//ID3D11ShaderResourceView* GetTexture() const { return m_texture; }
+	ID3D11ShaderResourceView* GetShaderResource() const { return m_texture; }
 	int GetWidth() const { return m_width; }
 	int GetHeight() const { return m_height; }
 
@@ -93,7 +94,6 @@ private:
 
 	// --- PRIVATE COMPONENT DATA ---
 	ID3D11ShaderResourceView* m_texture{ nullptr };
-	std::wstring m_path;
 	int m_width{ 0 };
 	int m_height{ 0 };
 

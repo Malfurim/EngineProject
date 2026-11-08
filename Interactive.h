@@ -25,7 +25,7 @@ class Interactive
 // - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
-	~Interactive();
+	virtual ~Interactive();
 
 	// --- CORE FUNCTIONS ---
 	// bool Initialize();

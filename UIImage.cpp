@@ -17,7 +17,7 @@
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	STATIC GLOBAL STATES & DATA								//
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
-TextureShader* UIImage::ms_imageShader = nullptr;
+Shader* UIImage::ms_imageShader = nullptr;
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 //	CONSTRUCTORS & DESTRUCTOR								//
@@ -89,15 +89,9 @@ void UIImage::Render()
 	DXDEVICECONTEXT->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	DXDEVICECONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	ms_imageShader->SetShaderParameters(m_texture->GetTexture());
+	ms_imageShader->SetShaderParameters(m_texture->GetShaderResource());
 	ms_imageShader->SetShaderParameters(ms_worldMatrix, ms_viewMatrix, ms_orthoMatrix);
 	ms_imageShader->Render(m_indexCount);
-	ms_imageShader->Reset();
-}
-
-void UIImage::Shutdown()
-{
-	SAFE_DELETE(ms_imageShader);
 }
 
 // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
@@ -270,6 +264,6 @@ void UIImage::CheckMinimalSize()
 void UIImage::ConfirmShader()
 {
 	if (ms_imageShader == nullptr)
-		ms_imageShader = new TextureShader();
+		ms_imageShader = SHADER(L"texture");
 }
 

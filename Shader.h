@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include "DXMath.h"
 #include <string>
+#include "ResourceBase.h"
 
 // --- CONSTANTS ---
 
@@ -15,30 +16,34 @@
 
 
 // --- FORWARD DECLARATIONS ---
+enum VertexFlag : unsigned int;
 
-
-class Shader
+class Shader : public ResourceBase
 {
-// - INTERFACE -
+	// - INTERFACE -
 public:
 	// --- CONSTRUCTORS & DESTRUCTOR ---
 	Shader();
-	virtual ~Shader();
+	~Shader() override;
 
 	// --- CORE FUNCTIONS ---
-	// bool Initialize();
+	bool Initialize(const std::wstring& name, unsigned int id, unsigned int layoutFlags);
 	// void Update();
-	virtual void Render(int indexCount);
-	virtual void Reset();
+	void Render(unsigned int indexCount);
 
-	// --- VIRTUAL FUNCTIONS ---
-	
+	// --- PUBLIC VIRTUAL FUNCTIONS ---
+
 
 	// --- CLASS API ---
 
 
 	// --- GETTERS & SETTERS ---
+	ID3D11VertexShader* GetVertexShader() const { return m_vertexShader; }
+	ID3D11PixelShader* GetPixelShader() const { return m_pixelShader; }
+	ID3D11InputLayout* GetLayout() const { return m_layout; }
+
 	bool SetShaderParameters(DXMATRIX worldMatrix, DXMATRIX viewMatrix, DXMATRIX projectionMatrix);
+	bool SetShaderParameters(ID3D11ShaderResourceView* texture);
 
 	// --- STATIC CLASS API ---
 
@@ -47,23 +52,25 @@ protected:
 	// --- CONSTRUCTORS ---
 
 
-	// --- VIRTUAL FUNCTIONS ---
-	virtual bool InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Blob* pixelShaderBuffer);
+	// --- PROTECTED VIRTUAL FUNCTIONS ---
+
 
 	// --- PROTECTED FUNCTIONS ---
-	void GetShaderBuffers(ID3D10Blob** vertexShaderBuffer, ID3D10Blob** pixelShaderBuffer, const std::string& hlslFilename, const char* shaderVertexFunctionEntry, const char* shaderPixelFunctionEntry, const char* shaderVertexName, const char* shaderPixelName);
+
 
 private:
 	// --- CONSTRUCTORS ---
 
 
 	// --- PRIVATE FUNCTIONS ---
-	ID3D10Blob* LoadCompiledShader(const std::string& shaderName);
-	void SaveCompiledShader(ID3D10Blob* shaderBuffer, std::string shaderFilename);
-	ID3D10Blob* CompileShader(const char* shaderCode, SIZE_T shaderLength, const char* entryPoint, const char* targetVersion);
+	bool InitializeShaderComponents(ID3D10Blob* vertexShaderBuffer, ID3D10Blob* pixelShaderBuffer);
+	bool GetShaderBuffers(ID3D10Blob** vertexShaderBuffer, ID3D10Blob** pixelShaderBuffer, const std::wstring& hlslFilename, const char* shaderVertexFunctionEntry, const char* shaderPixelFunctionEntry, const std::wstring& shaderVertexName, const std::wstring& shaderPixelName);
+	ID3D10Blob* LoadCompiledShader(const std::wstring& name);
+	ID3D10Blob* CompileShader(const std::string& shaderCode, const char* entryPoint, const char* targetVersion);
+	void SaveCompiledShader(ID3D10Blob* shaderBuffer, const std::wstring& shaderFilename);
 	virtual bool InitializeLayout(ID3D10Blob* vertexShaderBuffer);
 	void OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWSTR shaderFileName);
-	std::string LoadShaderSourceFile(const std::string& filename);
+	std::string LoadShaderSourceFile(const std::wstring& filename);
 
 // - PROPERTIES -
 public:
@@ -84,7 +91,7 @@ protected:
 
 
 	// --- INTERNAL COMPONENT DATA ---
-	ID3D11InputLayout* m_layout{ nullptr };
+
 
 private:
 	// --- PRIVATE CONSTANTS ---
@@ -99,14 +106,15 @@ private:
 	};
 
 	// --- PRIVATE COMPONENT STATES ---
-
+	unsigned int m_layoutFlags{ 0 };
 
 	// --- PRIVATE COMPONENT DATA ---
+	ID3D11InputLayout* m_layout{ nullptr };
 	ID3D11VertexShader* m_vertexShader{ nullptr };
 	ID3D11PixelShader* m_pixelShader{ nullptr };
+	ID3D11SamplerState* m_samplerState{ nullptr };
 	ID3D11Buffer* m_matrixBuffer{ nullptr };
 
 	// --- STATIC GLOBAL STATES ---
-	
+	static unsigned int ms_setShaderID;
 };
-

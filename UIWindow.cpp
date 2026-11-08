@@ -69,14 +69,6 @@ void UIWindow::Update()
 	if (UIWindow::IsCaptured() && m_isDragging)
 	{
 		Position mouseDelta = MOUSEDELTA;
-		/*
-		if (ms_previousMouseDragPosition.X != mouse.X || ms_previousMouseDragPosition.Y != mouse.Y)
-		{
-			Position position = GetPosition();
-			SetPosition(position.X + mouse.X - ms_previousMouseDragPosition.X, position.Y + mouse.Y - ms_previousMouseDragPosition.Y);
-			ms_previousMouseDragPosition = mouse;
-		}
-		*/
 		if (mouseDelta.X != 0.0f || mouseDelta.Y != 0.0f)
 		{
 			SetPosition(GetPosition() + mouseDelta);

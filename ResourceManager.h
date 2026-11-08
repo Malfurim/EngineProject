@@ -8,26 +8,56 @@
 
 // --- CONSTANTS ---
 static const std::wstring TEXTURE_FILE_EXTENSION = L".png";
-static const std::wstring MODEL_FILE_EXTENSION = L".txt";
+static const std::wstring MESH_FILE_EXTENSION = L".txt";
+static const std::wstring MATERIAL_FILE_EXTENSION = L".json";
 static const std::wstring FONT_FILE_EXTENSION = L".txt";
 
 static constexpr double UNUSED_TEXTURE_LIFETIME = 300.0;
-static constexpr double UNUSED_MODEL_LIFETIME = 600.0;
+static constexpr double UNUSED_MESH_LIFETIME = 600.0;
+static constexpr double UNUSED_MATERIAL_LIFETIME = 600.0;
 
 // --- MACROS & DEFINES ---
 #define RESOURCE ResourceManager::Instance()
 #define RESOURCEUPDATE ResourceManager::Instance()->Update()
+
 #define TEXTURERELEASE(t) ResourceManager::Instance()->ReleaseTexture(t)
 #define TEXTURE(t) ResourceManager::Instance()->GetTexture(t)
 #define TEXTURE2(t, u) ResourceManager::Instance()->GetTexture(t, u)
+
+#define MESHRELEASE(t) ResourceManager::Instance()->ReleaseMesh(t)
+#define MESH(t) ResourceManager::Instance()->GetMesh(t)
+#define MESH2(t, u) ResourceManager::Instance()->GetMesh(t, u)
+
+#define MESHDXRELEASE(t) ResourceManager::Instance()->ReleaseMeshDX(t)
+#define MESHDX(t) ResourceManager::Instance()->GetMeshDX(t)
+#define MESHDX2(t, u) ResourceManager::Instance()->GetMeshDX(t, u)
+
+#define MATERIALRELEASE(t) ResourceManager::Instance()->ReleaseMaterial(t)
+#define MATERIAL(t) ResourceManager::Instance()->GetMaterial(t)
+#define MATERIAL2(t, u) ResourceManager::Instance()->GetMaterial(t, u)
+
 #define FONT(t) ResourceManager::Instance()->GetFont(t)
+#define SHADER(t) ResourceManager::Instance()->GetShader(t)
 #define WINDOWSTYLE(t) ResourceManager::Instance()->GetWindowStyle(t)
 
 // --- FORWARD DECLARATIONS ---
 class Texture;
-class Model;
-class ModelDX;
+class Mesh;
+class MeshDX;
 class Font;
+class Shader;
+class Material;
+
+/*
+#ifdef _DEBUG // MessageBoxW
+extern "C" __declspec(dllimport) int __stdcall MessageBoxW(
+	void* hWnd,
+	const wchar_t* lpText,
+	const wchar_t* lpCaption,
+	unsigned int uType
+);
+#endif
+*/
 
 // --- ENUMS & STRUCTS ---
 enum class AssetPool
@@ -40,8 +70,9 @@ enum class AssetPool
 enum class AssetType
 {
 	ASSET_TYPE_TEXTURE,
-	ASSET_TYPE_MODEL,
-	ASSET_TYPE_MODELDX,
+	ASSET_TYPE_MESH,
+	ASSET_TYPE_MESHDX,
+	ASSET_TYPE_MATERIAL
 };
 
 template <typename T>
@@ -70,21 +101,36 @@ public:
 	// --- CLASS API ---
 	void AddStaticDirectory(const std::wstring& directory);
 	void ReleaseTexture(const std::wstring& name);
-	void ReleaseModel(const std::wstring& name);
-	void ReleaseModelDX(const std::wstring& name);
+	void ReleaseMesh(const std::wstring& name);
+	void ReleaseMeshDX(const std::wstring& name);
+	void ReleaseMaterial(const std::wstring& name);
+	void LoadUIShaders();
+	void LoadWorldShaders();
 
 	// --- GETTERS & SETTERS ---
 	Texture* GetTexture(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
-	Model* GetModel(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
-	ModelDX* GetModelDX(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
+	Mesh* GetMesh(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
+	MeshDX* GetMeshDX(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
+	Material* GetMaterial(const std::wstring& name, AssetPool poolMode = AssetPool::ASSET_AUTOMATIC);
 	Font* GetFont(const std::wstring& name);
+	Shader* GetShader(const std::wstring& name, unsigned int layoutFlags = 0);
 	const WindowStyle& GetWindowStyle(const std::wstring& name);
 
 	// TEMPORARY FOR DEBUG
 	const std::unordered_map<std::wstring, Texture*>& GetStaticTextureMap() const { return m_staticTextureMap; }
 	const std::unordered_map<std::wstring, Resource<Texture>>& GetDynamicTextureMap() const { return m_dynamicTextureMap; }
 	const std::vector<std::wstring>& GetUnusedTexturesVector() const { return m_unusedTextures; }
+	const std::unordered_map<std::wstring, Mesh*>& GetStaticMeshMap() const { return m_staticMeshMap; }
+	const std::unordered_map<std::wstring, Resource<Mesh>>& GetDynamicMeshMap() const { return m_dynamicMeshMap; }
+	const std::vector<std::wstring>& GetUnusedMeshVector() const { return m_unusedMeshs; }
+	const std::unordered_map<std::wstring, MeshDX*>& GetStaticAnimatedMeshMap() const { return m_staticAnimatedMeshMap; }
+	const std::unordered_map<std::wstring, Resource<MeshDX>>& GetDynamicAnimatedMeshMap() const { return m_dynamicAnimatedMeshMap; }
+	const std::vector<std::wstring>& GetUnusedAnimatedMeshVector() const { return m_unusedAnimatedMeshs; }
+	const std::unordered_map<std::wstring, Material*>& GetStaticMaterialMap() const { return m_staticMaterialMap; }
+	const std::unordered_map<std::wstring, Resource<Material>>& GetDynamicMaterialMap() const { return m_dynamicMaterialMap; }
+	const std::vector<std::wstring>& GetUnusedMaterialVector() const { return m_unusedMaterials; }
 	const std::unordered_map<std::wstring, Font*>& GetFontMap() const { return m_fontMap; }
+	const std::unordered_map<std::wstring, Shader*>& GetShaderMap() const { return m_shaderMap; }
 
 	// --- STATIC CLASS API ---
 	static ResourceManager* Instance();
@@ -149,16 +195,28 @@ private:
 	// --- PRIVATE COMPONENT DATA ---
 	std::unordered_map<std::wstring, Texture*> m_staticTextureMap;
 	std::unordered_map<std::wstring, Resource<Texture>> m_dynamicTextureMap;
+
+	std::unordered_map<std::wstring, Mesh*> m_staticMeshMap;
+	std::unordered_map<std::wstring, Resource<Mesh>> m_dynamicMeshMap;
+
+	std::unordered_map<std::wstring, MeshDX*> m_staticAnimatedMeshMap;
+	std::unordered_map<std::wstring, Resource<MeshDX>> m_dynamicAnimatedMeshMap;
+
+	std::unordered_map<std::wstring, Material*> m_staticMaterialMap;
+	std::unordered_map<std::wstring, Resource<Material>> m_dynamicMaterialMap;
+
 	std::unordered_map<std::wstring, Font*> m_fontMap;
-	std::unordered_map<std::wstring, Model*> m_staticModelMap;
-	std::unordered_map<std::wstring, Resource<Model>> m_dynamicModelMap;
-	std::unordered_map<std::wstring, ModelDX*> m_staticAnimatedModelMap;
-	std::unordered_map<std::wstring, Resource<ModelDX>> m_dynamicAnimatedModelMap;
+
+	std::unordered_map<std::wstring, Shader*> m_shaderMap;
+
 	std::unordered_map<std::wstring, WindowStyle> m_windowStyleMap;
+
 	std::vector<std::wstring> m_disabledMipmapDirectories;
+
 	std::vector<std::wstring> m_unusedTextures;
-	std::vector<std::wstring> m_unusedModels;
-	std::vector<std::wstring> m_unusedAnimatedModels;
+	std::vector<std::wstring> m_unusedMeshs;
+	std::vector<std::wstring> m_unusedAnimatedMeshs;
+	std::vector<std::wstring> m_unusedMaterials;
 
 	WindowStyle m_fallbackWindowStyle;
 
@@ -168,16 +226,18 @@ private:
 	static Font* ms_fallbackFont;
 };
 
-
-////////////////////////////////////
-////////////////////////////////////
-////////////////////////////////////
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
+//	INLINE TEMPLATE FUNCTIONS								//
+// ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** //
 
 template<typename T>
 inline T* ResourceManager::GetAsset(const std::wstring& name, AssetPool poolMode, AssetType type, std::unordered_map<std::wstring, T*>& staticMap, std::unordered_map<std::wstring, Resource<T>>& dynamicMap, std::vector<std::wstring>& unusedVector)
 {
+	if (name == L"")
+		return nullptr;
+
 	// Check if template has correct class type that inherits ResourceBase
-	static_assert(std::is_base_of<ResourceBase, T>::value, "Template type T must inherit from IResource!");
+	static_assert(std::is_base_of<ResourceBase, T>::value, "Template type T must inherit from ResourceBase!");
 
 	// Check if the texture is part of static directories
 	bool isStatic = (poolMode == AssetPool::ASSET_AUTOMATIC) ? CompareStaticDirectories(name) : (poolMode == AssetPool::ASSET_STATIC);
@@ -221,15 +281,21 @@ inline T* ResourceManager::GetAsset(const std::wstring& name, AssetPool poolMode
 		fallbackResouce = reinterpret_cast<T*>(ms_fallbackTexture);
 		break;
 
-	case AssetType::ASSET_TYPE_MODEL:
-		fileExtension = MODEL_FILE_EXTENSION;
-		fileDirectory = L"models/";
+	case AssetType::ASSET_TYPE_MESH:
+		fileExtension = MESH_FILE_EXTENSION;
+		fileDirectory = L"meshs/";
 		fallbackResouce = nullptr;
 		break;
 
-	case AssetType::ASSET_TYPE_MODELDX:
-		fileExtension = MODEL_FILE_EXTENSION;
-		fileDirectory = L"models/animated/";
+	case AssetType::ASSET_TYPE_MESHDX:
+		fileExtension = MESH_FILE_EXTENSION;
+		fileDirectory = L"meshs/animated/";
+		fallbackResouce = nullptr;
+		break;
+
+	case AssetType::ASSET_TYPE_MATERIAL:
+		fileExtension = MATERIAL_FILE_EXTENSION;
+		fileDirectory = L"materials/";
 		fallbackResouce = nullptr;
 		break;
 
@@ -244,7 +310,7 @@ inline T* ResourceManager::GetAsset(const std::wstring& name, AssetPool poolMode
 	if (!resource->Initialize(path, name, !isStatic))
 	{
 		#ifdef _DEBUG
-		//MessageBox(NULL, (L"Resource not loaded: " + path).c_str(), L"Path Error", MB_OK);
+		//MessageBoxW(NULL, (L"Resource not loaded: " + path).c_str(), L"Path Error", MB_OK);
 		#endif
 		delete resource;
 		resource = nullptr;

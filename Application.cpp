@@ -17,6 +17,9 @@
 #include "UIButton.h"
 #include "UIWindow.h"
 
+#include "WorldManager.h"
+#include "WorldObject.h"
+
 #include "Deleters.h"
 #include "Utils.h"
 
@@ -68,92 +71,30 @@ bool Application::Initialize()
 		XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, SCREEN_NEAR, SCREEN_DEPTH),					// Projection Matrix
 		XMMatrixOrthographicLH((float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, SCREEN_NEAR, SCREEN_DEPTH)	// Ortho Matrix
 	};
-	
-	UIWindow* w1 = new UIWindow({ 400, 255 }, { 800, 450 }, L"Main Test Panel", true, WindowCloseButton::CLOSEBUTTON_NONE, WINDOWSTYLE(L"default"), WindowDrag::DRAG_FULL);
+
+	RESOURCE->LoadUIShaders();
+	RESOURCE->LoadWorldShaders();
+
+	WorldObject::SetProjectionMatrix(m_renderMatrix.projectionMatrix);
+	//m_testObject = WorldObject::Create(MESH(L"cubeNew"), MATERIAL(L"test"));
+	WorldObjectDesc desc;
+	desc.mesh = MESH(L"cubeNew");
+	desc.material = MATERIAL(L"test");
+	WORLD->CreateObject(desc);
+	desc.position = { 1.0f, 0.0f, 0.0f };
+	WORLD->CreateObject(desc);
+	desc.position = { 2.0f, 0.0f, 0.0f };
+	WORLD->CreateObject(desc);
+	desc.position = { 1.0f, 1.0f, 0.0f };
+	WORLD->CreateObject(desc);
+
+	desc.position = { 0.0f, 2.0f, 2.0f };
+	m_testObject = WORLD->CreateObject(desc);
+
+	UIWindow* w1 = new UIWindow({ 1192, 8 }, { 400, 225 }, L"Main Test Panel", true, WindowCloseButton::CLOSEBUTTON_NONE, WINDOWSTYLE(L"default"), WindowDrag::DRAG_FULL);
 	UIADD(w1);
-	
-	UIText* t1 = new UIText({ 0, 0 }, { w1->GetContentSize() }, FONT(L"default"));
-	t1->SetFontSizeTotal(20.0f);
-	//t1->SetMaxLength(128);
-	t1->SetText(L"My first test\nof TEXT rendering\non multiple lines\nand centered in both\nhorizontal and vertical\npositions...");
-	t1->SetFontColor({ 0.0, 0.8f, 0.0f, 1.0f });
-	t1->SetCursorColor({ 1.0, 1.0f, 1.0f, 1.0f });
-	t1->SetTextAlignment(HORIZONTAL_TEXT_ALIGNMENT_CENTER, VERTICAL_TEXT_ALIGNMENT_MIDDLE);
-	t1->SetTextProperties(TEXT_PROPERTY_EDITABLE | TEXT_PROPERTY_MULTILINE);
-	w1->AddChild(t1);
-	
-	//UIImage* i1 = new UIImage({ 800, 100 }, { 128, 128 });
-	UIImage* i1 = new UIImage({ 16, 175 }, { 64, 64 });
-	i1->SetImage(TEXTURE(L"ui/dirtAnimated"));
-	i1->EnableAnimation(4, 1, 2);
-	//i1->SetBorderSize(8.0f);
-	//m_userInterface->AddChild(i1);
-	w1->AddChild(i1);
-	
-	UIButton* b1 = new UIButton({ 96, 16 }, { 192, 64 });
-	b1->SetBackgroundColor({ 0.5f, 0.0f, 0.0f, 1.0f });
-	b1->SetBorderColor({ 0.75f, 0.0f, 0.0f, 1.0f });
-	b1->SetBorderColor({ 0.0f, 0.75f, 0.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
-	b1->SetBorderColor({ 0.0f, 0.0f, 0.75f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
-	b1->SetBorderSize(2.0f);
-	b1->SetBackgroundColor({ 0.0f, 0.5f, 0.0f, 1.0f }, ButtonState::BUTTON_STATE_HOVER);
-	b1->SetBackgroundColor({ 0.0f, 0.0f, 0.5f, 1.0f }, ButtonState::BUTTON_STATE_PRESSED);
-	b1->SetFont(FONT(L"default"));
-	b1->SetFontSizeTotal(20.0f);
-	b1->SetFontColor({ 0.8f, 0.8f, 0.8f, 1.0f });
-	b1->EnableRepeatable();
-	w1->AddChild(b1);
 
-	m_testIMG = new UIImage({ 16, 16 }, { 64, 64 });
-	m_testIMG->SetImage(TEXTURE2(L"ui/loam", AssetPool::ASSET_DYNAMIC));
-	w1->AddChild(m_testIMG);
-
-	static int Number{ 0 };
-	//b1->OnClick += [](UIButton* sender) { Number++; sender->SetText(STR(Number)); };
-	b1->OnClick += [&](UIButton* sender) {
-		switch (Number)
-		{
-		case 0:
-			m_testIMG->SetImage(TEXTURE2(L"ui/sandy_loam", AssetPool::ASSET_DYNAMIC));
-			sender->SetText(STR(Number));
-			Number++;
-			return;
-		case 1:
-			m_testIMG->SetImage(TEXTURE2(L"ui/silt", AssetPool::ASSET_DYNAMIC));
-			sender->SetText(STR(Number));
-			Number++;
-			return;
-		case 2:
-			m_testIMG->SetImage(TEXTURE2(L"ui/silty_loam", AssetPool::ASSET_DYNAMIC));
-			sender->SetText(STR(Number));
-			Number++;
-			return;
-		case 3:
-			m_testIMG->SetImage(TEXTURE2(L"ui/loam", AssetPool::ASSET_DYNAMIC));
-			sender->SetText(STR(Number));
-			Number = 0;
-			return;
-		}
-		};
-	b1->SetText(STR(Number));
-
-	UIWindow* w2 = new UIWindow({ 700, 30 }, { 200, 100 }, L"Test Window", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
-	UIADD(w2);
-	UIWindow* w3 = new UIWindow({ 950, 30 }, { 200, 100 }, L"Test Window 2", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
-	UIADD(w3);
-	UIWindow* w4 = new UIWindow({ 700, 150 }, { 200, 100 }, L"Test Window 3 back", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
-	UIADD2(w4, WindowType::WINDOW_FORCEDBACK);
-	UIWindow* w5 = new UIWindow({ 950, 150 }, { 200, 100 }, L"Test Window 4 front", true, WindowCloseButton::CLOSEBUTTON_DESTROY, WINDOWSTYLE(L"default"), WindowDrag::DRAG_TITLE);
-	UIADD2(w5, WindowType::WINDOW_FORCEDFRONT);
-
-	t1 = nullptr;
-	i1 = nullptr;
-	b1 = nullptr;
 	w1 = nullptr;
-	w2 = nullptr;
-	w3 = nullptr;
-	w4 = nullptr;
-	w5 = nullptr;
 
 	UIADD2(DEBUG, WindowType::WINDOW_FORCEDFRONT);
 	DEBUG->SetGridSize(3, 1);
@@ -258,13 +199,11 @@ void Application::Shutdown()
 		delete m_instance;
 		m_instance = nullptr;
 	}
-	
-	UIText::Shutdown();
-	UIImage::Shutdown();
-	GraphicBase::Shutdown();
+
 	//delete ENTITY;
 	delete INP;
 	delete TIMER;
+	delete WORLD;
 	delete UI;
 	delete RESOURCE;
 	delete DXMANAGER;
@@ -286,6 +225,16 @@ void Application::UpdateInput()
 	if (ISMOUSERELEASED(MouseButton::MOUSE_BUTTON_LEFT))
 	{
 		UI->MouseEvent(MouseButton::MOUSE_BUTTON_LEFT, InputEventType::INPUT_EVENT_RELEASE);
+	}
+
+	if (ISMOUSEPRESSED(MouseButton::MOUSE_BUTTON_RIGHT))
+	{
+		UI->MouseEvent(MouseButton::MOUSE_BUTTON_RIGHT, InputEventType::INPUT_EVENT_CLICK);
+	}
+
+	if (ISMOUSEPRESSED(MouseButton::MOUSE_BUTTON_RIGHT))
+	{
+		UI->MouseEvent(MouseButton::MOUSE_BUTTON_RIGHT, InputEventType::INPUT_EVENT_RELEASE);
 	}
 
 	RESOURCEUPDATE;
@@ -447,50 +396,110 @@ void Application::UpdateUI()
 
 	UI->Update();
 
-	std::wstring textureText = L"--- STATIC TEXTURES ---\n";
-	for (auto& texture : RESOURCE->GetStaticTextureMap())
+	std::wstring resourceText = L"--- STATIC RESOURCES ---\n";
+	for (auto& resource : RESOURCE->GetStaticTextureMap())
 	{
-		textureText += L"- " + texture.first + L"\n";
+		resourceText += L"Tex - " + resource.first + L"\n";
 	}
-	textureText += L"\n--- DYNAMIC TEXTURES ---\n";
-	for (auto& texture : RESOURCE->GetDynamicTextureMap())
+	for (auto& resource : RESOURCE->GetStaticMeshMap())
 	{
-		textureText += L"- " + texture.first + L" (Ref: " + std::to_wstring(texture.second.referenceCount) +
-			L", Time: " + ToWStringWithPrecision(texture.second.timeSinceUnused, 1) + L"s)\n";
+		resourceText += L"Mesh - " + resource.first + L"\n";
 	}
-	textureText += L"\n--- UNUSED TEXTURES ---\n";
-	for (auto& texture : RESOURCE->GetUnusedTexturesVector())
+	for (auto& resource : RESOURCE->GetStaticAnimatedMeshMap())
 	{
-		textureText += L"- " + texture + L"\n";
+		resourceText += L"AMesh - " + resource.first + L"\n";
 	}
-	textureText += L"\n--- LOADED FONTS ---\n";
+	for (auto& resource : RESOURCE->GetStaticMaterialMap())
+	{
+		resourceText += L"Mat - " + resource.first + L"\n";
+	}
+	resourceText += L"\n--- DYNAMIC RESOURCES ---\n";
+	for (auto& resource : RESOURCE->GetDynamicTextureMap())
+	{
+		resourceText += L"Tex - " + resource.first + L" (Ref: " + std::to_wstring(resource.second.referenceCount) +
+			L", Time: " + ToWStringWithPrecision(resource.second.timeSinceUnused, 1) + L"s)\n";
+	}
+	for (auto& resource : RESOURCE->GetDynamicMeshMap())
+	{
+		resourceText += L"Mesh - " + resource.first + L" (Ref: " + std::to_wstring(resource.second.referenceCount) +
+			L", Time: " + ToWStringWithPrecision(resource.second.timeSinceUnused, 1) + L"s)\n";
+	}
+	for (auto& resource : RESOURCE->GetDynamicAnimatedMeshMap())
+	{
+		resourceText += L"AMesh - " + resource.first + L" (Ref: " + std::to_wstring(resource.second.referenceCount) +
+			L", Time: " + ToWStringWithPrecision(resource.second.timeSinceUnused, 1) + L"s)\n";
+	}
+	for (auto& resource : RESOURCE->GetDynamicMaterialMap())
+	{
+		resourceText += L"Mat - " + resource.first + L" (Ref: " + std::to_wstring(resource.second.referenceCount) +
+			L", Time: " + ToWStringWithPrecision(resource.second.timeSinceUnused, 1) + L"s)\n";
+	}
+	resourceText += L"\n--- UNUSED RESOURCES ---\n";
+	for (auto& resource : RESOURCE->GetUnusedTexturesVector())
+	{
+		resourceText += L"Tex - " + resource + L"\n";
+	}
+	for (auto& resource : RESOURCE->GetUnusedMeshVector())
+	{
+		resourceText += L"Mesh - " + resource + L"\n";
+	}
+	for (auto& resource : RESOURCE->GetUnusedAnimatedMeshVector())
+	{
+		resourceText += L"AMesh - " + resource + L"\n";
+	}
+	for (auto& resource : RESOURCE->GetUnusedMaterialVector())
+	{
+		resourceText += L"Mat - " + resource + L"\n";
+	}
+	resourceText += L"\n--- LOADED FONTS ---\n";
 	for (auto& font : RESOURCE->GetFontMap())
 	{
-		textureText += L"- " + font.first + L"\n";
+		resourceText += L"- " + font.first + L"\n";
 	}
-	DEBUG->SetText(2, 0, textureText);
+	resourceText += L"\n--- LOADED SHADERS ---\n";
+	for (auto& font : RESOURCE->GetShaderMap())
+	{
+		resourceText += L"- " + font.first + L"\n";
+	}
+	DEBUG->SetText(2, 0, resourceText);
 }
 
 void Application::Update3D()
 {
+	m_camera->Update();
+	WorldObject::SetViewMatrix(m_camera->GetViewMatrix());
+	
+	static float speed = 2.5f;
+	static float rotSpeed = 45.0f;
+	static float direction = 1;
+	DXFLOAT3 pos = m_testObject->GetPosition();
+	DXFLOAT3 rot = m_testObject->GetRotation();
+	if (pos.x > 5.0f)
+		direction = -1;
+	else if (pos.x < -5.0f)
+		direction = 1;
+	
+	m_testObject->SetPosition(pos.x + (DELTAWORLD * speed * direction), pos.y, pos.z);
+	m_testObject->SetRotation(rot.x + (DELTAWORLD * rotSpeed), rot.y + (DELTAWORLD * (rotSpeed * 0.5f)), rot.z);
 
+	WORLDUPDATE;
 }
 
 void Application::Render()
 {
 	DXMANAGER->BeginScene(0.6875f, 0.765625f, 0.8671875f, 1.0f);
 
-	DXMATRIX viewMatrix;
+	/*
+	DXMATRIX viewMatrix = m_camera->GetViewMatrix();
 	DXMATRIX worldMatrix;
 	DXMATRIX projectionMatrix;
 	DXMATRIX orthoMatrix;
 	DXMATRIX translateMatrix;
 
-	m_camera->GetViewMatrix(viewMatrix);
 	worldMatrix = m_renderMatrix.worldMatrix;
 	projectionMatrix = m_renderMatrix.projectionMatrix;
 	orthoMatrix = m_renderMatrix.orthoMatrix;
-
+	*/
 	/*
 	for (int i = 0; i < 256; i++)
 	{
@@ -500,14 +509,18 @@ void Application::Render()
 	}
 	*/
 
+	WORLDRENDER;
+
 	DXMANAGER->EnableZBuffer(false);
 	DXMANAGER->EnableBlendState(true);
-
+	/*
 	translateMatrix = XMMatrixTranslation(0, 0, 1);
 	viewMatrix = XMMatrixMultiply(XMMatrixIdentity(), XMMatrixTranslation(0.0f, 0.0f, 1.0f));
 	worldMatrix = XMMatrixIdentity();
+	*/
 
 	UI->Render();
+	
 
 	DXMANAGER->EnableBlendState(false);
 	DXMANAGER->EnableZBuffer(true);
